@@ -1,0 +1,6 @@
+
+/.spyproject
+*.pt
+*.tar
+*.pyc
+*.code-workspace
