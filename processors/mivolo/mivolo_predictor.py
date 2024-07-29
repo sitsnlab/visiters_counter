@@ -4,11 +4,12 @@
 """
 
 
+import time
 from typing import Optional, Tuple
 import numpy as np
-import time
 
-from ultralytics.yolo.engine.results import Results
+from ultralytics.engine.results import Results
+
 from mivolo.model.mi_volo import MiVOLO
 from mivolo.model.yolo_detector import Detector
 

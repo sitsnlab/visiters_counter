@@ -19,6 +19,8 @@ parser.add_argument('--detector_weitght', help='YOLOのチェックポイント�
                     default=r".\models\yolov8x_person_face.pt")
 parser.add_argument('--read_screen', help='pc画面から画像を取り込む.',
                     default=False)
+parser.add_argument("--monitor_num", help="読み込むモニター番号",
+                    default=0)
 
 args = parser.parse_args()
 
@@ -33,7 +35,7 @@ if __name__ == '__main__':
 
     # カメラ類の初期化
     capture = cv2.VideoCapture(0)
-    sreader = ScreenReader(monitor_num=1)
+    sreader = ScreenReader(monitor_num=args.monitor_num)
 
     def detect():
         """画面の取得，検出."""

@@ -7,7 +7,11 @@
 1. Python3.11以降の仮想環境を用意する．
 1. Ver.1.13以上でcuda対応のpytorchを導入する．
 1. [MiVOLO](https://github.com/WildChlamydia/MiVOLO)の[Install](https://github.com/WildChlamydia/MiVOLO/blob/main/README.md#install)に従ってMiVOLOを導入する．
-1. MiVOLOリポジトリの[Demo](https://github.com/WildChlamydia/MiVOLO/blob/main/README.md#demo)からYOLOとMiVOLOのチェックポイントを`models`にダウンロードする．
+1. MiVOLOリポジトリの[Demo](https://github.com/WildChlamydia/MiVOLO/blob/main/README.md#demo)からYOLOとMiVOLOのチェックポイントを`visitor-counter/models`へダウンロードする．
+1. `visitor-counter`ディレクトリに移動し，以下のコードを実行
+```console
+pip install -r requirements.txt
+```
 
 ## demoの実行方法
 
