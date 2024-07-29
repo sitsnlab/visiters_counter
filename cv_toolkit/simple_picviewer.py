@@ -8,6 +8,7 @@ import time
 import tkinter as tk
 from PIL import Image, ImageTk, ImageOps  # 画像データ用
 import cv2
+import numpy as np
 
 
 class SimplePicViewer(tk.Frame):
@@ -76,6 +77,7 @@ class SimplePicViewer(tk.Frame):
         self.fps_interval = 10
         self.oldtime = 0
         self.cycle = int(1000/fps)
+        self.Old_frame = np.zeros([100, 100, 3], dtype=np.uint8)
 
         if startup:
             self.canvas_click()
@@ -103,11 +105,17 @@ class SimplePicViewer(tk.Frame):
 
     def input_image(self):
         """画像をCanvasに表示する."""
-        frame = self.frame_reader()
+        try:
+            frame = self.frame_reader()
+        except Exception as e:
+            print(e)
+        finally:
+            if frame is None:
+                frame = self.Old_frame
 
-        # BGR→RGB変換 > Pillow.Image
         cv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         pil_image = Image.fromarray(cv_image)
+        self.Old_frame = frame
 
         # キャンバスサイズを取得
         canvas_width = self.canvas.winfo_width()
