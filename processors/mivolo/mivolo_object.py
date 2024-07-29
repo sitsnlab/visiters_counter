@@ -3,15 +3,15 @@
 
 """
 
+from copy import deepcopy
+import datetime as dt
 
 import cv2
 import numpy as np
-from copy import deepcopy
 
-from ultralytics.yolo.engine.results import Results, Boxes
-from ultralytics.yolo.utils.plotting import Annotator, colors
+from ultralytics.engine.results import Results, Boxes
+from ultralytics.utils.plotting import Annotator, colors
 from mivolo.structures import PersonAndFaceResult
-import datetime as dt
 
 
 class FrameDetectResult(PersonAndFaceResult):
