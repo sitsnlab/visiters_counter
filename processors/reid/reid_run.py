@@ -14,6 +14,11 @@ import cv2
 from PIL import Image
 import time
 
+import sys
+import os.path as path
+sys.path.append(path.join(path.dirname(__file__), ".."))
+sys.path.append(path.join(path.dirname(__file__), "../.."))
+
 from processors.mivolo.mivolo_predictor import MiVOLOPredictor
 from cv_toolkit.screen_reader import ScreenReader
 
