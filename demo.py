@@ -6,7 +6,7 @@
 import cv2
 import argparse
 
-from processors.mivolo.mivolo_predictor import MiVOLOPredictor
+from processors.mivolo.visitor_predictor import VCPredictor
 from cv_toolkit.screen_reader import ScreenReader
 from cv_toolkit.simple_picviewer import SimplePicViewer
 
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     read_screen = args.read_screen
 
     # MiVOLOの初期化
-    mivolo = MiVOLOPredictor(checkpoint=checkpoint, detector_weights=detector_weitght,
+    mivolo = VCPredictor(checkpoint=checkpoint, detector_weights=detector_weitght,
                              draw=True, disable_faces=False, with_persons=True, verbose=False)
 
     # カメラ類の初期化
