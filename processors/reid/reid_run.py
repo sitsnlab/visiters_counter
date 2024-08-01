@@ -24,8 +24,13 @@ from cv_toolkit.screen_reader import ScreenReader
 
 from mivolo.model.yolo_detector import Detector
 
+from reid_tools import load_model
+from myosnet_highres1 import osnet_x1_0 as osnet 
+from reid_opencampus import ReID
+
 checkpoint = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
 weitght = r".\models\yolov8x_person_face.pt"
+reid_model_path = r'.\models\reid_model_addblock3.pth.tar-22'
 read_screen = False
 monitor_num = 0
 t1 = time.time()
@@ -41,6 +46,19 @@ detector = Detector(r".\models\yolov8x_person_face.pt", 'cuda')
 # カメラ類の初期化
 capture = cv2.VideoCapture(0)
 sreader = ScreenReader(monitor_num=monitor_num)
+
+#Re-IDクラスのインスタンス
+reid = ReID()
+reid.image_size = (512, 256)
+reid.thrs = 10
+reid.save_dir = r'.\visitor_images'
+#Re-IDモデル
+reid_model = osnet(
+    num_classes = 1,
+    )
+reid_model = reid_model.cuda()
+reid_model.eval()
+load_model(reid_model, reid_model_path)
 
 print('Start detection.')
 while True:
