@@ -6,7 +6,7 @@
 import cv2
 import argparse
 
-from processors.mivolo.visitor_predictor import VCPredictor
+from processors.visitor_predictor import VCPredictor
 from cv_toolkit.screen_reader import ScreenReader
 from cv_toolkit.simple_picviewer import SimplePicViewer
 

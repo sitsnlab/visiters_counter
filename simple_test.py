@@ -6,7 +6,7 @@
 import cv2
 import time
 
-from processors.mivolo.visitor_predictor import VCPredictor
+from processors.visitor_predictor import VCPredictor
 from cv_toolkit.screen_reader import ScreenReader
 
 
@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     # カメラ類の初期化
     capture = cv2.VideoCapture(0)
-    sreader = ScreenReader(monitor_num=1)
+    # sreader = ScreenReader(monitor_num=1)
 
     while True:
         ret, frame = capture.read()
