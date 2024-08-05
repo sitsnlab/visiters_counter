@@ -18,8 +18,8 @@ if __name__ == '__main__':
 
     # MiVOLOの初期化
     mivolo = VCPredictor(detector_weitght, checkpoint, draw=True,
-                             disable_faces=False, with_persons=True,
-                             verbose=False)
+                         disable_faces=False, with_persons=True,
+                         verbose=False)
 
     # カメラ類の初期化
     capture = cv2.VideoCapture(0)
