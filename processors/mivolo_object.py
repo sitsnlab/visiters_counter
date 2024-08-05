@@ -56,8 +56,11 @@ class FrameDetectResult(PersonAndFaceResult):
         self.colors_by_ind = {}
         self.md_results: list[MiVOLODetectResult] = []
         self.person_face_id: list[tuple[int, int]] = []
-        self.visitors = []
         self.last_id = last_id
+
+    def visitorid_list(self):
+        """検出した人物のIDリストを返す."""
+        return [person.person_id for person in self.md_results]
 
     def update_result(self):
         """MiVOLOでの解析後，色と検出した人物の情報を更新する."""
@@ -95,13 +98,8 @@ class FrameDetectResult(PersonAndFaceResult):
             gender = self.fix_gender(face_ind, person_ind)
             age = self.fix_age(face_ind, person_ind)
 
-            # IDの設定
-            pid = index + self.last_id
-            self.visitors.append(pid)
-
             mvdr = MiVOLODetectResult(p_boxes[person_ind], p_boxes[face_ind],
-                                      color, person_id=pid,
-                                      gender=gender, age=age)
+                                      color, gender=gender, age=age)
             self.md_results.append(mvdr)
 
     def fix_gender(self, face_ind=None, person_ind=None):
@@ -202,7 +200,9 @@ class FrameDetectResult(PersonAndFaceResult):
 
         # 文字の描画
         left_bottom = xy[0], xy[1] + h + space
-        cv2.putText(self.annotator.im, text, left_bottom, 0, self.annotator.lw / 3, txt_color, thickness=tf, lineType=cv2.LINE_AA)
+        cv2.putText(self.annotator.im, text, left_bottom, 0,
+                    self.annotator.lw / 3, txt_color, thickness=tf,
+                    lineType=cv2.LINE_AA)
 
     def print_info(self):
         """出力情報表示."""
@@ -255,6 +255,7 @@ class MiVOLODetectResult():
         self.age = age
         self.gender = gender
         self.person_id = person_id
+        self.visited_numb = 0
 
         now = dt.datetime.now()
         self.time = now.strftime('%H:%M:%S.%f')
@@ -278,7 +279,8 @@ class MiVOLODetectResult():
         dim = bbox.xyxy.dim()
         return bbox if dim == 2 else None
 
-    def plot_box(self, annotator: Annotator, plot_id=False, plot_info=False):
+    def plot_box(self, annotator: Annotator, plot_id=False, plot_info=False,
+                 text: str | None = None):
         """指定したアノテータに顔と人をプロットする.
 
         Parameters
@@ -299,6 +301,7 @@ class MiVOLODetectResult():
         label = ''
         if plot_id: label += f'{self.person_id},'
         if plot_info: label += f'{self.gender},{self.age}'
+        if text is not None:label += text
 
         if self.person is not None:
             # print('outperson: ', self.person)
