@@ -13,14 +13,14 @@ import time
 import sys
 import os.path as path
 from pathlib import Path as plib
-# sys.path.append(path.join(path.dirname(__file__), ".."))
-# sys.path.append(path.join(path.dirname(__file__), "../.."))
+sys.path.append(path.join(path.dirname(__file__), ".."))
+sys.path.append(path.join(path.dirname(__file__), "../.."))
 
 from processors.visitor_predictor import VCPredictor
 from cv_toolkit.screen_reader import ScreenReader
 
 from reid_tools import load_model
-from myosnet_highres1 import osnet_x1_0 as osnet
+from myosnet_highres1 import osnet_x1_0
 from reid_opencampus import ReID
 
 import itertools
@@ -46,7 +46,7 @@ tsum = 0
 count = 0
 
 # MiVOLOの初期化
-mivolo = VCPredictor(mivolo_weight=checkpoint, yolo_weight=weitght,
+mivolo = VCPredictor(mivolo_weight=checkpoint, yolo_weight=weitght, reid_weight = reid_model_path,
                      disable_faces=False, with_persons=True,
                      draw=True, verbose=False)
 
@@ -57,11 +57,11 @@ sreader = ScreenReader(monitor_num=monitor_num)
 #Re-IDクラスのインスタンス
 reid = ReID()
 reid.image_size = (512, 256)
-reid.thrs = 30
+reid.thrs = 10
 reid.save_dir = image_save_dir
 #print("save dir > ", path.abspath(r'.\visitor_images'))
 #Re-IDモデル
-reid_model = osnet(
+reid_model = osnet_x1_0(
     num_classes = 1,
     pretrained = False
     )
@@ -69,7 +69,7 @@ reid_model = reid_model.cuda()
 reid_model.eval()
 load_model(reid_model, reid_model_path)
 reid.prepare(reid_model)
-
+#print("model type > ", reid_model)
 print('Start detection.')
 while True:
     """画像検出."""
