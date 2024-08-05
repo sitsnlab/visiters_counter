@@ -10,6 +10,8 @@ import time
 from processors.mivolo.mivolo_predictor import MiVOLOPredictor
 from cv_toolkit.screen_reader import ScreenReader
 
+from mivolo.model.yolo_detector import Detector
+
 checkpoint = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
 weitght = r".\models\yolov8x_person_face.pt"
 read_screen = False
@@ -22,6 +24,7 @@ count = 0
 mivolo = MiVOLOPredictor(checkpoint=checkpoint, detector_weights=weitght,
                          disable_faces=False, with_persons=True,
                          draw=True, verbose=False)
+detector = Detector(r".\models\yolov8x_person_face.pt", 'cuda')
 
 # カメラ類の初期化
 capture = cv2.VideoCapture(0)
@@ -35,10 +38,12 @@ while True:
     else:
         _, image = capture.read()  # カメラ検出
 
-    _, out_im = mivolo.recognize(image)  # 物体検出
+    detects, out_im = mivolo.recognize(image)  # 物体検出
 
-    cv2.namedWindow('camera', cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty('camera',cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
+    print(detects.md_results[0].person.xyxy)
+
+    # cv2.namedWindow('camera', cv2.WINDOW_NORMAL)
+    # cv2.setWindowProperty('camera',cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
     cv2.imshow('camera', out_im)
     if cv2.waitKey(1) & 0xff == ord('q'):
         break

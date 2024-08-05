@@ -5,3 +5,5 @@
 *.pyc
 *.code-workspace
 temp.jpg
+*.jpg
+/models
