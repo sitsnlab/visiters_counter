@@ -7,29 +7,35 @@
 import time
 from typing import Optional, Tuple
 import numpy as np
+import itertools
+import cv2
 
 from ultralytics.engine.results import Results
 from mivolo.model.yolo_detector import Detector
-
 from mivolo.model.mi_volo import MiVOLO
-
 from .mivolo_object import FrameDetectResult
 
+from .reid.reid_tools import load_model
+from .reid.myosnet_highres1 import osnet_x1_0 as osnet
+from .reid.reid_opencampus import ReID
 
 class VCPredictor:
     """人物の検出と同定を行うクラス."""
 
-    def __init__(self, detector_weights: str, checkpoint: str, device: str = "cuda:0",
+    def __init__(self, yolo_weight: str, mivolo_weight: str, reid_weight: str,
+                 device: str = "cuda:0",
                  with_persons: bool = False, disable_faces: bool = False,
                  draw: bool = False, verbose: bool = False):
         """イニシャライザ.
 
         Parameters
         ----------
-        detector_weights : str
+        yolo_weight : str
             YOLOチェックポイントパス.
-        checkpoint : str
+        mivolo_weight : str
             MiVOLOチェックポイントパス.
+        reid_weight : str
+            Re-IDチェックポイントパス.
         device : str
             使用デバイス.
         with_persons : bool, optional
@@ -47,10 +53,21 @@ class VCPredictor:
 
         """
         # モデルの初期化
-        self.YOLO_model = Detector(detector_weights, device, verbose=verbose)
-        self.MiVOLO_model = MiVOLO(checkpoint, device, verbose=verbose,
+        self.YOLO_model = Detector(yolo_weight, device, verbose=verbose)
+        self.MiVOLO_model = MiVOLO(mivolo_weight, device, verbose=verbose,
                                    half=True, use_persons=with_persons,
                                    disable_faces=disable_faces)
+
+        #Re-IDクラスのインスタンス
+        self.reid = ReID()
+        self.reid.image_size = (512, 256)
+        self.reid.thrs = 10
+        self.reid.save_dir = 'visitor_images'
+        #Re-IDモデル
+        reid_model = osnet(num_classes=1, pretrained=False).cuda()
+        reid_model.eval()
+        load_model(reid_model, reid_weight)
+        self.reid.prepare(reid_model)
 
         # FPS計算用
         self.oldtime = time.time()
@@ -65,7 +82,8 @@ class VCPredictor:
         self.old_objects: FrameDetectResult = None
 
     def recognize(self, image: np.ndarray,
-                  plot_id: bool = True, plot_info: bool = True
+                  plot_id: bool = True, plot_info: bool = True,
+                  clip_person: bool = False
                   ) -> Tuple[FrameDetectResult, Optional[np.ndarray]]:
         """1フレームの検出を行う.
 
@@ -99,8 +117,21 @@ class VCPredictor:
         self.detected_objects.update_result()
 
         # (ReID)人物同定
-        for miv_obj in self.detected_objects.md_results:
-            miv_obj.person_id = dummy_id(miv_obj)
+        for i, miv_obj in enumerate(self.detected_objects.md_results):
+            detect_result = miv_obj.person.xyxy
+            people = list(itertools.chain.from_iterable(detect_result.tolist()))
+            # print("people > ", people)
+
+            # 人物画像作成
+            person = image[round(people[1]): round(people[3]), round(people[0]): round(people[2])]
+
+            # ID付与
+            pid = self.reid.run_reid(person)
+            miv_obj.person_id = pid
+
+            if clip_person:
+                cv2.putText(person, pid, (10, 20), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 0, 0))
+                cv2.imshow(f"{i}_person, {pid}", person)
 
         # 文字情報の更新
         self.update_fps()
@@ -130,6 +161,9 @@ class VCPredictor:
                 self.visitor_count += 1
                 self.visitor_dict[visitorid] = self.visitor_count
                 print('update ! ')
+
+        for miv_obj in self.detected_objects.md_results:
+            miv_obj.visited_numb = self.visitor_dict[miv_obj.person_id]
 
     def draw_result(self, plot_id, plot_info):
         """検出結果の描画."""

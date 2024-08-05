@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
-"""
+"""Re-IDの実行テスト.
 Created on Wed Jul 31 19:44:07 2024
 
 @author: ab19109
-"""
-
-"""デモ.
-
 """
 
 # %% 検出
@@ -16,24 +12,33 @@ import time
 
 import sys
 import os.path as path
-sys.path.append(path.join(path.dirname(__file__), ".."))
-sys.path.append(path.join(path.dirname(__file__), "../.."))
+from pathlib import Path as plib
+# sys.path.append(path.join(path.dirname(__file__), ".."))
+# sys.path.append(path.join(path.dirname(__file__), "../.."))
 
-from processors.mivolo.mivolo_predictor import MiVOLOPredictor
+from processors.visitor_predictor import VCPredictor
 from cv_toolkit.screen_reader import ScreenReader
-
-from mivolo.model.yolo_detector import Detector
 
 from reid_tools import load_model
 from myosnet_highres1 import osnet_x1_0 as osnet
 from reid_opencampus import ReID
+
 import itertools
 import glob
 
-checkpoint = r"..\..\models\model_imdb_cross_person_4.22_99.46.pth.tar"
-weitght = r"..\..\models\yolov8x_person_face.pt"
-reid_model_path = r'..\..\models\reid_model_addblock3.pth.tar-22'
-image_save_dir = r'..\..\visitor_images'
+models_path = plib(__file__).parents[2] / 'models'
+print(models_path)
+
+# %%
+checkpoint = models_path / "model_imdb_cross_person_4.22_99.46.pth.tar"
+weitght = models_path / "yolov8x_person_face.pt"
+reid_model_path = models_path / 'reid_model_addblock3.pth.tar-22'
+image_save_dir = plib(__file__).parents[2] / 'visitor_images'
+
+# checkpoint = r"..\..\models\model_imdb_cross_person_4.22_99.46.pth.tar"
+# weitght = r"..\..\models\yolov8x_person_face.pt"
+# reid_model_path = r'..\..\models\reid_model_addblock3.pth.tar-22'
+# image_save_dir = r'..\..\visitor_images'
 read_screen = False
 monitor_num = 0
 t1 = time.time()
@@ -41,10 +46,9 @@ tsum = 0
 count = 0
 
 # MiVOLOの初期化
-mivolo = MiVOLOPredictor(checkpoint=checkpoint, detector_weights=weitght,
-                         disable_faces=False, with_persons=True,
-                         draw=True, verbose=False)
-# detector = Detector(r".\models\yolov8x_person_face.pt", 'cuda')
+mivolo = VCPredictor(mivolo_weight=checkpoint, yolo_weight=weitght,
+                     disable_faces=False, with_persons=True,
+                     draw=True, verbose=False)
 
 # カメラ類の初期化
 capture = cv2.VideoCapture(0)

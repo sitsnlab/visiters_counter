@@ -30,7 +30,7 @@ if __name__ == '__main__':
     read_screen = args.read_screen
 
     # MiVOLOの初期化
-    mivolo = VCPredictor(checkpoint=checkpoint, detector_weights=detector_weitght,
+    mivolo = VCPredictor(mivolo_weight=checkpoint, yolo_weight=detector_weitght,
                              draw=True, disable_faces=False, with_persons=True, verbose=False)
 
     # カメラ類の初期化

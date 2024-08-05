@@ -85,11 +85,17 @@ class FrameDetectResult(PersonAndFaceResult):
             self.person_face_id.append((None, person_ind))
 
     def make_result_list(self):
-        """検出結果からMiVOLODetectResultのリストを作成する."""
+        """検出結果からMiVOLODetectResultのリストを作成する.
+
+        顔と体，体のみ⇒検出結果作成
+        顔のみ⇒排除
+        """
         p_boxes = self.yolo_results.boxes
 
         for index, (face_ind, person_ind) in enumerate(self.person_face_id):
-            if face_ind is None:
+            if person_ind is None:
+                continue
+            elif face_ind is None:
                 color = self.colors_by_ind[person_ind]
             else:
                 color = self.colors_by_ind[face_ind]
@@ -298,9 +304,9 @@ class MiVOLODetectResult():
 
         """
         flabel = ''
-        label = ''
-        if plot_id: label += f'{self.person_id},'
-        if plot_info: label += f'{self.gender},{self.age}'
+        label = f'numb_{self.visited_numb}'
+        if plot_id: label += f', {self.person_id}'
+        if plot_info: label += f', {self.gender}, {self.age}'
         if text is not None:label += text
 
         if self.person is not None:
