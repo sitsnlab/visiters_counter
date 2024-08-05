@@ -14,7 +14,7 @@ Created on Wed Jul 31 19:06:47 2024
 '''
 import torch
 # import reid_tools as rt
-from .reid_tools import MyFeatureExtractor, calc_euclidean_dist
+from reid_tools import MyFeatureExtractor, calc_euclidean_dist
 
 import os
 import os.path as osp
@@ -174,21 +174,20 @@ class ReID(object):
         distmat = distmat.cpu().numpy()
         #余分な[]を外す
         dist_iter = list(itertools.chain.from_iterable(distmat))
-        print("distance > , ", dist_iter)
+        print("distmat > , ", dist_iter)
         #距離が短い順にしたときに各要素が元々どの位置にいたかを表すリスト
-        try:
-            indices = np.argsort(dist_iter, axis=1)
-
-        except:
-            indices = [0]
+            
+        #indices = np.argsort(dist_iter, axis=1)
+        indice = dist_iter.index(min(dist_iter))
+        print("indice > ", indice)
 
         #距離の最小値が閾値以上の場合は新規人物として登録
-        print("min distance > ", dist_iter[indices[0]])
-        if dist_iter[indices[0]] > self.thrs:
+        print("min distance > ", dist_iter[indice])
+        if dist_iter[indice] > self.thrs:
             pid = self.regist_new_person(qimg)
 
         else:
-            pid = gid_list[indices[0]]
+            pid = gid_list[indice]
 
 
         return pid
