@@ -61,22 +61,24 @@ class VCPredictor:
         #Re-IDクラスのインスタンス
         self.reid = ReID()
         self.reid.image_size = (512, 256)
-        self.reid.thrs = 10
+        self.reid.thrs = 30
         self.reid.save_dir = 'visitor_images'
         #Re-IDモデル
         reid_model = osnet(num_classes=1, pretrained=False).cuda()
         reid_model.eval()
         load_model(reid_model, reid_weight)
         self.reid.prepare(reid_model)
+        pre_ids = self.reid.dict_gallery_features.keys()
+
+        # visitor計測用
+        self.visitor_dict: dict[str:int] = {key: i+1 for i, key in
+                                            enumerate(pre_ids)}
+        self.visitor_count = len(self.visitor_dict)
 
         # FPS計算用
         self.oldtime = time.time()
         self.count = 0
         self.fps = 0.0
-
-        # visitor計測用
-        self.visitor_count = 0
-        self.visitor_dict: dict[str:int] = {}  # 来場者の個人IDリスト
 
         self.detected_objects: FrameDetectResult = None
         self.old_objects: FrameDetectResult = None

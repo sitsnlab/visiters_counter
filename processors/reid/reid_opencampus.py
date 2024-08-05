@@ -14,7 +14,7 @@ Created on Wed Jul 31 19:06:47 2024
 '''
 import torch
 # import reid_tools as rt
-from reid_tools import MyFeatureExtractor, calc_euclidean_dist
+from .reid_tools import MyFeatureExtractor, calc_euclidean_dist
 
 import os
 import os.path as osp
@@ -176,7 +176,7 @@ class ReID(object):
         dist_iter = list(itertools.chain.from_iterable(distmat))
         print("distmat > , ", dist_iter)
         #距離が短い順にしたときに各要素が元々どの位置にいたかを表すリスト
-            
+
         #indices = np.argsort(dist_iter, axis=1)
         indice = dist_iter.index(min(dist_iter))
         print("indice > ", indice)
