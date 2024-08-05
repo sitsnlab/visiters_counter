@@ -53,7 +53,7 @@ sreader = ScreenReader(monitor_num=monitor_num)
 #Re-IDクラスのインスタンス
 reid = ReID()
 reid.image_size = (512, 256)
-reid.thrs = 20
+reid.thrs = 30
 reid.save_dir = image_save_dir
 #print("save dir > ", path.abspath(r'.\visitor_images'))
 #Re-IDモデル
