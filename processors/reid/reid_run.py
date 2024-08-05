@@ -25,15 +25,15 @@ from cv_toolkit.screen_reader import ScreenReader
 from mivolo.model.yolo_detector import Detector
 
 from reid_tools import load_model
-from myosnet_highres1 import osnet_x1_0 as osnet 
+from myosnet_highres1 import osnet_x1_0 as osnet
 from reid_opencampus import ReID
 import itertools
 import glob
 
-checkpoint = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
-weitght = r".\models\yolov8x_person_face.pt"
-reid_model_path = r'.\models\reid_model_addblock3.pth.tar-22'
-image_save_dir = r'.\visitor_images'
+checkpoint = r"..\..\models\model_imdb_cross_person_4.22_99.46.pth.tar"
+weitght = r"..\..\models\yolov8x_person_face.pt"
+reid_model_path = r'..\..\models\reid_model_addblock3.pth.tar-22'
+image_save_dir = r'..\..\visitor_images'
 read_screen = False
 monitor_num = 0
 t1 = time.time()
@@ -44,7 +44,7 @@ count = 0
 mivolo = MiVOLOPredictor(checkpoint=checkpoint, detector_weights=weitght,
                          disable_faces=False, with_persons=True,
                          draw=True, verbose=False)
-detector = Detector(r".\models\yolov8x_person_face.pt", 'cuda')
+# detector = Detector(r".\models\yolov8x_person_face.pt", 'cuda')
 
 # カメラ類の初期化
 capture = cv2.VideoCapture(0)
@@ -77,21 +77,22 @@ while True:
     detects, out_im = mivolo.recognize(image)  # 物体検出
 
     #print(detects.md_results[0].person.xyxy)
-    
+
     '''
     Re-ID実行
     '''
-    detect_result = detects.md_results[0].person.xyxy
-    people = list(itertools.chain.from_iterable(detect_result.tolist()))
-    #print("people > ", people)
-    #人物画像作成
-    person = image[round(people[1]): round(people[3]), round(people[0]): round(people[2])]
-    
-        
-    pid = reid.run_reid(person)
-    cv2.putText(person, pid, (10, 20), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 0, 0))
-    cv2.imshow("person", person)
-    
+    for i, person in enumerate(detects.md_results):
+        detect_result = person.person.xyxy
+        people = list(itertools.chain.from_iterable(detect_result.tolist()))
+        #print("people > ", people)
+        #人物画像作成
+        person = image[round(people[1]): round(people[3]), round(people[0]): round(people[2])]
+
+
+        pid = reid.run_reid(person)
+        cv2.putText(person, pid, (10, 20), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 0, 0))
+        cv2.imshow(f"{i}_person", person)
+
     # cv2.namedWindow('camera', cv2.WINDOW_NORMAL)
     # cv2.setWindowProperty('camera',cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
     cv2.imshow('camera', out_im)
