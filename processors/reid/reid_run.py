@@ -27,10 +27,13 @@ from mivolo.model.yolo_detector import Detector
 from reid_tools import load_model
 from myosnet_highres1 import osnet_x1_0 as osnet 
 from reid_opencampus import ReID
+import itertools
+import glob
 
 checkpoint = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
 weitght = r".\models\yolov8x_person_face.pt"
 reid_model_path = r'.\models\reid_model_addblock3.pth.tar-22'
+image_save_dir = r'.\visitor_images'
 read_screen = False
 monitor_num = 0
 t1 = time.time()
@@ -50,15 +53,18 @@ sreader = ScreenReader(monitor_num=monitor_num)
 #Re-IDクラスのインスタンス
 reid = ReID()
 reid.image_size = (512, 256)
-reid.thrs = 10
-reid.save_dir = r'.\visitor_images'
+reid.thrs = 20
+reid.save_dir = image_save_dir
+#print("save dir > ", path.abspath(r'.\visitor_images'))
 #Re-IDモデル
 reid_model = osnet(
     num_classes = 1,
+    pretrained = False
     )
 reid_model = reid_model.cuda()
 reid_model.eval()
 load_model(reid_model, reid_model_path)
+reid.prepare(reid_model)
 
 print('Start detection.')
 while True:
@@ -70,8 +76,22 @@ while True:
 
     detects, out_im = mivolo.recognize(image)  # 物体検出
 
-    print(detects.md_results[0].person.xyxy)
-
+    #print(detects.md_results[0].person.xyxy)
+    
+    '''
+    Re-ID実行
+    '''
+    detect_result = detects.md_results[0].person.xyxy
+    people = list(itertools.chain.from_iterable(detect_result.tolist()))
+    #print("people > ", people)
+    #人物画像作成
+    person = image[round(people[1]): round(people[3]), round(people[0]): round(people[2])]
+    
+        
+    pid = reid.run_reid(person)
+    cv2.putText(person, pid, (10, 20), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 0, 0))
+    cv2.imshow("person", person)
+    
     # cv2.namedWindow('camera', cv2.WINDOW_NORMAL)
     # cv2.setWindowProperty('camera',cv2.WND_PROP_FULLSCREEN,cv2.WINDOW_FULLSCREEN)
     cv2.imshow('camera', out_im)
@@ -89,3 +109,4 @@ while True:
 
 capture.release()
 cv2.destroyAllWindows()
+print("{} People were detected".format(len(glob.glob(path.join(image_save_dir, '*.jpg')))))

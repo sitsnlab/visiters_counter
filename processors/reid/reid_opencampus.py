@@ -68,7 +68,7 @@ class ReID(object):
         os.makedirs(self.save_dir, exist_ok=True)
         
         #特徴抽出器
-        self.extractor = rt.MyfeatureExtractor(model, self.image_size)
+        self.extractor = rt.MyFeatureExtractor(model, self.image_size)
         
         '''
         検索画像取得
@@ -109,12 +109,12 @@ class ReID(object):
         pid = now_time.strftime("%H%M_%S")
         
         #既にIDが存在していた場合(同時に複数人が観測されたとき)
-        if pid in self.people_list:
+        if pid in self.pid_list:
             #末尾に番号を割り当て，新規IDとなるまで数値を増やす．
             i = 1
             while True:
                 new_pid = pid + '_{}'.format(i)
-                if new_pid not in self.people_list:
+                if new_pid not in self.pid_list:
                     pid = new_pid
                     
                     break
@@ -122,11 +122,15 @@ class ReID(object):
                 else:
                     i += 1
         
-        self.people_list.append(pid)
+        self.pid_list.append(pid)
+        
+        #画像の特徴抽出，特徴ベクトル保存
+        gf = self.extractor(image)
+        self.dict_gallery_features[pid] = gf
         
         #画像保存
         cv2.imwrite(osp.join(self.save_dir, pid + '.jpg'), image)
-        
+        #print("savede images at {}".format(osp.join(self.save_dir, pid + '.jpg')))
         
         return pid
     
@@ -169,10 +173,16 @@ class ReID(object):
         distmat = distmat.cpu().numpy()
         #余分な[]を外す
         dist_iter = list(itertools.chain.from_iterable(distmat))
-        #距離が短い順にしたときに各要素が元々どの位置にいたかをい表すリスト
-        indices = np.argsort(dist_iter, axis=1)
+        print("distance > , ", dist_iter)
+        #距離が短い順にしたときに各要素が元々どの位置にいたかを表すリスト
+        try:
+            indices = np.argsort(dist_iter, axis=1)
         
+        except:
+            indices = [0]
+            
         #距離の最小値が閾値以上の場合は新規人物として登録
+        print("min distance > ", dist_iter[indices[0]])
         if dist_iter[indices[0]] > self.thrs:
             pid = self.regist_new_person(qimg)
             
