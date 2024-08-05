@@ -59,7 +59,7 @@ class VCPredictor:
 
         # visitor計測用
         self.visitor_count = 0
-        self.visitor_list: list[str] = []  # 来場者の個人IDリスト
+        self.visitor_dict: dict[str:int] = {}  # 来場者の個人IDリスト
 
         self.detected_objects: FrameDetectResult = None
         self.old_objects: FrameDetectResult = None
@@ -91,7 +91,7 @@ class VCPredictor:
             image, **self.YOLO_model.detector_kwargs)[0]
 
         # 検出結果統合クラス
-        last_num = len(self.visitor_list)
+        last_num = len(self.visitor_dict)
         self.detected_objects = FrameDetectResult(YOLO_results, last_num)
 
         # (MiVOLO)年齢,性別の判定
@@ -99,6 +99,8 @@ class VCPredictor:
         self.detected_objects.update_result()
 
         # (ReID)人物同定
+        for miv_obj in self.detected_objects.md_results:
+            miv_obj.person_id = dummy_id(miv_obj)
 
         # 文字情報の更新
         self.update_fps()
@@ -123,8 +125,11 @@ class VCPredictor:
 
     def update_visitor(self):
         """現在の来場者数を更新する."""
-        self.visitor_list += self.detected_objects.visitors
-        self.visitor_count = len(self.visitor_list)
+        for visitorid in self.detected_objects.visitorid_list():
+            if self.visitor_dict.get(visitorid) is None:
+                self.visitor_count += 1
+                self.visitor_dict[visitorid] = self.visitor_count
+                print('update ! ')
 
     def draw_result(self, plot_id, plot_info):
         """検出結果の描画."""
@@ -135,3 +140,11 @@ class VCPredictor:
         text = f'fps:{self.fps}, visitor:{self.visitor_count}'
         self.detected_objects.plot_textbox((0, 0), text=text)
         return self.detected_objects.get_img()
+
+
+def dummy_id(obj):
+    """性別と年齢からIDを付与する."""
+    num = obj.age // 10 * 10
+    did = f"{num}_{obj.gender}"
+    return did
+
