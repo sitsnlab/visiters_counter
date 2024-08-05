@@ -17,8 +17,34 @@ from mivolo.structures import PersonAndFaceResult
 class FrameDetectResult(PersonAndFaceResult):
     """各フレーム毎の検出結果を持つクラス."""
 
-    def __init__(self, results: Results, line_width=None, font_size=None,
-                 font="Arial.ttf", pil=False, img=None, last_id=0):
+    def __init__(self, results: Results, last_id=0, line_width=None,
+                 font_size=None, font="Arial.ttf", pil=False, img=None):
+        """イニシャライザ.
+
+        Parameters
+        ----------
+        results : Results
+            YOLOの検出結果.
+        last_id : TYPE, optional
+            人物IDの初期値. The default is 0.
+        line_width : float, optional
+            描画するBoundingBoxの線太さ. The default is None.
+        font_size : float, optional
+            描画するBoundingBoxのフォントサイズ. The default is None.
+        font : str, optional
+            描画するフォント. The default is "Arial.ttf".
+        pil : TYPE, optional
+            画像をPillowで描画するか. Falseならばcv(np.ndarray)
+            The default is False.
+        img : TYPE, optional
+            描画先の画像.指定がなければYOLOの検出結果を利用する.
+            The default is None.
+
+        Returns
+        -------
+        None.
+
+        """
         super().__init__(results)
 
         # アノテータ―の設定(Ultralytics)
@@ -30,15 +56,18 @@ class FrameDetectResult(PersonAndFaceResult):
         self.colors_by_ind = {}
         self.md_results: list[MiVOLODetectResult] = []
         self.person_face_id: list[tuple[int, int]] = []
-        self.visitors = []
         self.last_id = last_id
+
+    def visitorid_list(self):
+        """検出した人物のIDリストを返す."""
+        return [person.person_id for person in self.md_results]
 
     def update_result(self):
         """MiVOLOでの解析後，色と検出した人物の情報を更新する."""
-        self.plot_color()
+        self.color_bbox()
         self.make_result_list()
 
-    def plot_color(self):
+    def color_bbox(self):
         """表示する際の色を決定する."""
         # 顔と体の色を合わせて指定する.
         for face_ind, person_ind in self.face_to_person_map.items():
@@ -69,13 +98,8 @@ class FrameDetectResult(PersonAndFaceResult):
             gender = self.fix_gender(face_ind, person_ind)
             age = self.fix_age(face_ind, person_ind)
 
-            # IDの設定
-            pid = index + self.last_id
-            self.visitors.append(pid)
-
             mvdr = MiVOLODetectResult(p_boxes[person_ind], p_boxes[face_ind],
-                                      color, person_id=pid,
-                                      gender=gender, age=age)
+                                      color, gender=gender, age=age)
             self.md_results.append(mvdr)
 
     def fix_gender(self, face_ind=None, person_ind=None):
@@ -131,55 +155,6 @@ class FrameDetectResult(PersonAndFaceResult):
         else:
             return self.ages[face_ind]
 
-    def get_img(self) -> np.ndarray:
-        """画像を書き出す."""
-        return self.annotator.result()
-
-    # Override
-    def plot(self, conf=False, labels=True, show_boxes=True):
-        """PersonAndFaceResult.plot()のOverride.
-
-        Parameters
-        ----------
-        conf : TYPE, optional
-            検出の確率. The default is False.
-        labels : TYPE, optional
-            検出結果の一覧. The default is True.
-        boxes : TYPE, optional
-            バウンディングボックスの表示. The default is True.
-
-        Returns
-        -------
-        None.
-
-        """
-        # バウンディングボックスとその表示の有無
-        pred_boxes = self.yolo_results.boxes
-
-        # バウンディングボックスの表示
-        if pred_boxes and show_boxes:
-            # index, (bbox, 年齢, 性別, 性別の確率)
-            for bb_ind, (d, age, gender, gender_score) in enumerate(
-                    zip(pred_boxes, self.ages, self.genders, self.gender_scores)):
-                # bbox, confidence, boxID(設定しないと出ない)
-                c, conf = int(d.cls), float(d.conf) if conf else None
-                name = f'{bb_ind} ' + self.names[c]
-                label = (f"{name} {conf:.2f}" if conf else name) if labels else ""
-
-                if labels:
-                    # 年齢　性別　（性別の確率）
-                    if age is not None:
-                        label += f" {age:.1f}"
-                    if gender is not None:
-                        label += f" {'F' if gender == 'female' else 'M'}"
-                    if gender_score is not None:
-                        label += f" ({gender_score:.1f})"
-
-                # lobelを追加してボックスを表示
-                self.annotator.box_label(
-                    d.xyxy.squeeze(), label,
-                    color=colors(self.colors_by_ind[bb_ind], True))
-
     def plot_MiVOLODetectResult(self, plot_id=False, plot_info=False):
         """検出した結果をMiVOLODetectResultに基づいて表示する."""
         for mvdr in self.md_results:
@@ -225,7 +200,9 @@ class FrameDetectResult(PersonAndFaceResult):
 
         # 文字の描画
         left_bottom = xy[0], xy[1] + h + space
-        cv2.putText(self.annotator.im, text, left_bottom, 0, self.annotator.lw / 3, txt_color, thickness=tf, lineType=cv2.LINE_AA)
+        cv2.putText(self.annotator.im, text, left_bottom, 0,
+                    self.annotator.lw / 3, txt_color, thickness=tf,
+                    lineType=cv2.LINE_AA)
 
     def print_info(self):
         """出力情報表示."""
@@ -240,18 +217,45 @@ class FrameDetectResult(PersonAndFaceResult):
         print('key: ', self.yolo_results.keypoints)
         print()
 
+    def get_img(self) -> np.ndarray:
+        """画像を書き出す."""
+        return self.annotator.result()
+
 
 class MiVOLODetectResult():
     """各人物ことのインスタンス."""
 
     def __init__(self, person: Boxes, face: Boxes, color: int,
                  age: float, gender: str, person_id=None,):
+        """イニシャライザ.
+
+        Parameters
+        ----------
+        person : Boxes
+            人物のBoundingBox.
+        face : Boxes
+            顔のBoundingBox.
+        color : int
+            描画する際の色.
+        age : float
+            年齢.
+        gender : str
+            性別.
+        person_id : TYPE, optional
+            個人ID. The default is None.
+
+        Returns
+        -------
+        None.
+
+        """
         self.person: Boxes = self.box_setter(person)
         self.face: Boxes = self.box_setter(face)
         self.color: int = color
         self.age = age
         self.gender = gender
         self.person_id = person_id
+        self.visited_numb = 0
 
         now = dt.datetime.now()
         self.time = now.strftime('%H:%M:%S.%f')
@@ -275,7 +279,8 @@ class MiVOLODetectResult():
         dim = bbox.xyxy.dim()
         return bbox if dim == 2 else None
 
-    def plot_box(self, annotator: Annotator, plot_id=False, plot_info=False):
+    def plot_box(self, annotator: Annotator, plot_id=False, plot_info=False,
+                 text: str | None = None):
         """指定したアノテータに顔と人をプロットする.
 
         Parameters
@@ -296,6 +301,7 @@ class MiVOLODetectResult():
         label = ''
         if plot_id: label += f'{self.person_id},'
         if plot_info: label += f'{self.gender},{self.age}'
+        if text is not None:label += text
 
         if self.person is not None:
             # print('outperson: ', self.person)
