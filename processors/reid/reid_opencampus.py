@@ -30,7 +30,6 @@ import datetime
 import itertools
 
 
-
 '''
 Re-ID用クラス
 '''
