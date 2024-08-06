@@ -15,7 +15,7 @@ from mivolo.structures import PersonAndFaceResult
 
 
 class FrameDetectResult(PersonAndFaceResult):
-    """各フレーム毎の検出結果を持つクラス."""
+    """1フレーム内の検出結果を持つクラス."""
 
     def __init__(self, results: Results, last_id=0, line_width=None,
                  font_size=None, font="Arial.ttf", pil=False, img=None):

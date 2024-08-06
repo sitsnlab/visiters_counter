@@ -31,7 +31,6 @@ if __name__ == '__main__':
     # 書き出し機能の初期化
     dw = DataWriter(save_path)
 
-
     while True:
         ret, frame = capture.read()
         # ret, frame = True, sreader.read_screen()  # スクリーン検出
@@ -40,7 +39,8 @@ if __name__ == '__main__':
             results, out_im = vc_pred.recognize(frame, clip_person=True)
 
             # print(results.md_results[0].dump_data())
-            for md_obj in results.md_results:
+            # for md_obj in results.md_results:
+            for md_obj in vc_pred.new_visitors:
                 dw.weite_file(md_obj.dump_data().values())
             cv2.imwrite('temp.jpg', out_im)
             cv2.imshow(__file__, out_im)
