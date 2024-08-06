@@ -324,7 +324,10 @@ class MiVOLODetectResult():
         """検出した情報を出力する."""
         data = {}
 
+        data['visited_numb'] = self.visited_numb
         data['person_id'] = self.person_id
         data['time'] = self.time
         data['gender'] = self.gender
         data['age'] = self.age
+
+        return data
