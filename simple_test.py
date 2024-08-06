@@ -15,7 +15,7 @@ if __name__ == '__main__':
     yolo_weight = r".\models\yolov8x_person_face.pt"
     mivolo_weight = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
     reid_weight = r".\models\reid_model_addblock3.pth.tar-22"
-    save_path = r'output.csv'
+    save_path = r'output'
     t1 = time.time()
     count = 0
 
@@ -40,7 +40,8 @@ if __name__ == '__main__':
             results, out_im = vc_pred.recognize(frame, clip_person=True)
 
             # print(results.md_results[0].dump_data())
-            dw.weite_file(results.md_results[0].dump_data().keys())
+            for md_obj in results.md_results:
+                dw.weite_file(md_obj.dump_data().values())
             cv2.imwrite('temp.jpg', out_im)
             cv2.imshow(__file__, out_im)
             if cv2.waitKey(1) & 0xff == ord('q'):
@@ -52,7 +53,7 @@ if __name__ == '__main__':
             print(count / times)
             t1 = time.time()
             count = 0
-        break
+        # break
 
     capture.release()
     cv2.destroyAllWindows()

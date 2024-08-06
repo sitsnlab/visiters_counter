@@ -7,12 +7,20 @@ import csv
 from pathlib import Path as plib
 import pandas as pd
 import tqdm
+import datetime as dt
 
 class DataWriter:
     """検出結果をCSVに書き出すクラス."""
 
     def __init__(self, save_path: str):
+        now = dt.datetime.now()
+        save_path += now.strftime('%H_%M_%S_%f') + '.csv'
+        label = ['visited_numb', "person_id", "time", "gender", "age"]
+
         self.save_file = plib(save_path)
+        with open(self.save_file, 'w') as f:
+            f.write(','.join(label) + '\n')
+
 
     def weite_file(self, text):
         with open(self.save_file, 'a') as f:
