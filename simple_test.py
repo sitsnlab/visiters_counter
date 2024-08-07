@@ -9,6 +9,8 @@ import time
 from processors.visitor_predictor import VCPredictor
 from cv_toolkit.screen_reader import ScreenReader
 
+from processors import recorder
+
 
 if __name__ == '__main__':
     yolo_weight = r".\models\yolov8x_person_face.pt"
@@ -25,6 +27,17 @@ if __name__ == '__main__':
     # カメラ類の初期化
     capture = cv2.VideoCapture(0)
     # sreader = ScreenReader(monitor_num=1)
+
+    # 録画準備
+    # 動画保存先
+    video_dir = r'.\video'
+    # フレームの幅．高さ，動画FPS
+    width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    #fps = capture.get(cv2.CAP_PROP_FPS)
+    fps = 10
+    recorder = recorder.Recorder(width, height, fps)
+    recorder.prepare(video_dir)
 
     while True:
         ret, frame = capture.read()
@@ -46,6 +59,11 @@ if __name__ == '__main__':
             t1 = time.time()
             count = 0
         # break
+        
+    
+        #　動画書込み
+        recorder.write(out_im)
 
     capture.release()
     cv2.destroyAllWindows()
+    recorder.release()

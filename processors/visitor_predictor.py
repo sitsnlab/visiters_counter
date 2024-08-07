@@ -19,6 +19,8 @@ from .reid.reid_tools import load_model
 from .reid.myosnet_highres1 import osnet_x1_0 as osnet
 from .reid.reid_opencampus import ReID
 
+
+
 class VCPredictor:
     """人物の検出と同定を行うクラス."""
 
@@ -80,6 +82,7 @@ class VCPredictor:
 
         self.detected_objects: FrameDetectResult = None
         self.old_objects: FrameDetectResult = None
+        
 
     def recognize(self, image: np.ndarray,
                   plot_id: bool = True, plot_info: bool = True,

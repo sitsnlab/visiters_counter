@@ -14,7 +14,7 @@ Created on Wed Jul 31 19:06:47 2024
 '''
 import torch
 # import reid_tools as rt
-from reid_tools import MyFeatureExtractor, calc_euclidean_dist
+from .reid_tools import MyFeatureExtractor, calc_euclidean_dist
 
 import os
 import os.path as osp
