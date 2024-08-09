@@ -58,6 +58,9 @@ class FrameDetectResult(PersonAndFaceResult):
         self.person_face_id: list[tuple[int, int]] = []
         self.last_id = last_id
 
+        now = dt.datetime.now()
+        self.time = now.strftime('%Y-%m-%d %H:%M:%S.%f')
+
     def visitorid_list(self):
         """検出した人物のIDリストを返す."""
         return [person.person_id for person in self.md_results]
@@ -105,7 +108,8 @@ class FrameDetectResult(PersonAndFaceResult):
             age = self.fix_age(face_ind, person_ind)
 
             mvdr = MiVOLODetectResult(p_boxes[person_ind], p_boxes[face_ind],
-                                      color, gender=gender, age=age)
+                                      color, gender=gender, age=age,
+                                      time=self.time)
             self.md_results.append(mvdr)
 
     def fix_gender(self, face_ind=None, person_ind=None):
@@ -232,7 +236,7 @@ class MiVOLODetectResult():
     """各人物ことのインスタンス."""
 
     def __init__(self, person: Boxes, face: Boxes, color: int,
-                 age: float, gender: str, person_id=None,):
+                 age: float, gender: str, time: str, person_id=None,):
         """イニシャライザ.
 
         Parameters
@@ -247,6 +251,8 @@ class MiVOLODetectResult():
             年齢.
         gender : str
             性別.
+        time : str
+            検出時間.
         person_id : TYPE, optional
             個人ID. The default is None.
 
@@ -263,9 +269,7 @@ class MiVOLODetectResult():
         self.person_id = person_id
         self.visited_numb = 0
 
-        now = dt.datetime.now()
-        self.time = now.strftime('%H:%M:%S.%f')
-        self.date = now.strftime('%Y/%m/%d')
+        self.time = time
 
     def box_setter(self, bbox: Boxes) -> Boxes | None:
         """バウンディングボックスのセッター.

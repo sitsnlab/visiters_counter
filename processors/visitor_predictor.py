@@ -61,7 +61,7 @@ class VCPredictor:
         #Re-IDクラスのインスタンス
         self.reid = ReID()
         self.reid.image_size = (512, 256)
-        self.reid.thrs = 30
+        self.reid.thrs = 10
         self.reid.save_dir = 'visitor_images'
         #Re-IDモデル
         reid_model = osnet(num_classes=1, pretrained=False).cuda()
