@@ -5,6 +5,7 @@ Created on Mon Aug 12 19:40:57 2024.
 @author: Yuta Kuronuma
 """
 import cv2
+import time
 
 from processors.visitor_predictor import VCPredictor
 from processors.recorder import Recorder
@@ -36,6 +37,7 @@ if __name__ == '__main__':
     cv2.namedWindow(frame_name, cv2.WINDOW_NORMAL)
     cv2.setWindowProperty(frame_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
+    t0 = time.time()
     while True:
         ret, frame = capture.read()
         if ret:
@@ -51,6 +53,7 @@ if __name__ == '__main__':
             out_im = padding.padding_image(out_im)
             cv2.imshow(frame_name, out_im)
 
+            print('time', int(time.time() - t0))
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
 
