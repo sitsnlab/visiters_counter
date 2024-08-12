@@ -7,6 +7,7 @@ Created on Mon Aug 12 19:40:57 2024.
 import cv2
 
 from processors.visitor_predictor import VCPredictor
+from processors.recorder import Recorder
 from cv_toolkit.screen_reader import ImgPadding
 
 
@@ -22,28 +23,30 @@ if __name__ == '__main__':
 
     # カメラ類の初期化
     capture = cv2.VideoCapture(0)
+    frame_name = 'visitor_counter'
+    cv2.namedWindow(frame_name, cv2.WINDOW_NORMAL)  # 全画面表示設定
+    cv2.setWindowProperty(frame_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     # 画像拡張設定
     ret, frame = capture.read()
     padding = ImgPadding(frame, 0)
 
-    # 画像表示設定（全画面）
-    frame_name = 'visitor_counter'
-    cv2.namedWindow(frame_name, cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty(frame_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    # 録画機能初期化
+    recorder = Recorder(width=frame.shape[1], height=frame.shape[0], fps=10)
 
     while True:
         ret, frame = capture.read()
         if ret:
             # 位置検出
             results, out_im = vc_pred.recognize(frame, clip_person=False)
-            out_im = padding.padding_image(out_im)
+            recorder.write(out_im)  # 動画書込み
 
+            out_im = padding.padding_image(out_im)
             cv2.imshow(frame_name, out_im)
 
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
 
-
     capture.release()
     cv2.destroyAllWindows()
+    recorder.release()

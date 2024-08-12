@@ -77,10 +77,12 @@ class ImgPadding:
         if self.img_ratio <= self.screen_ratio:
             pad_size[0] = shape[0]
             pad_size[1] = int((self.screen_ratio * shape[0] - shape[1]) / 2)
+            self.padding_size = [pad_size[0], pad_size[1] * 2 + shape[1]]
             self.axis = 1
         else:
             pad_size[0] = int((shape[1] / self.screen_ratio - shape[0]) / 2)
             pad_size[1] = shape[1]
+            self.padding_size = [pad_size[0] * 2 + shape[0], pad_size[1]]
             self.axis = 0
 
         self.padding = np.zeros(pad_size, dtype='uint8')
