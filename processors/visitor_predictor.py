@@ -23,7 +23,7 @@ class VCPredictor:
     """人物の検出と同定を行うクラス."""
 
     def __init__(self, yolo_weight: str, mivolo_weight: str, reid_weight: str,
-                 device: str = "cuda:0",
+                 device: str = "cuda:0", reid_thrs: float = 30,
                  with_persons: bool = False, disable_faces: bool = False,
                  draw: bool = False, verbose: bool = False):
         """イニシャライザ.
@@ -38,6 +38,8 @@ class VCPredictor:
             Re-IDチェックポイントパス.
         device : str
             使用デバイス.
+        reid_thrs: float
+            re-idの閾値.
         with_persons : bool, optional
             検出に体画像を使用するか. The default is False.
         disable_faces : bool, optional
@@ -58,12 +60,13 @@ class VCPredictor:
                                    half=True, use_persons=with_persons,
                                    disable_faces=disable_faces)
 
-        #Re-IDクラスのインスタンス
+        # Re-IDクラスのインスタンス
         self.reid = ReID()
         self.reid.image_size = (512, 256)
-        self.reid.thrs = 30
+        self.reid.thrs = reid_thrs
         self.reid.save_dir = 'visitor_images'
-        #Re-IDモデル
+
+        # Re-IDモデル
         reid_model = osnet(num_classes=1, pretrained=False).cuda()
         reid_model.eval()
         load_model(reid_model, reid_weight)
