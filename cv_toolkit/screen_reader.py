@@ -59,13 +59,65 @@ class ScreenSelector:
         return (m.x, m.y, m.x + m.width, m.y + m.height)
 
 
+class ImgPadding:
+    """スクリーンに合わせて画像を広げるクラス."""
+
+    def __init__(self, img: np.ndarray, screen_num: int = 0):
+        selector = ScreenSelector()
+        self.monitor = selector.get_monitor(screen_num)
+
+        # 画面比率
+        self.screen_ratio = self.monitor.width / self.monitor.height
+        self.img_ratio = img.shape[1] / img.shape[0]
+
+        # 画像設定
+        shape = img.shape
+        pad_size = list(img.shape)
+        self.axis = None
+        if self.img_ratio <= self.screen_ratio:
+            pad_size[0] = shape[0]
+            pad_size[1] = int((self.screen_ratio * shape[0] - shape[1]) / 2)
+            self.axis = 1
+        else:
+            pad_size[0] = int((shape[1] / self.screen_ratio - shape[0]) / 2)
+            pad_size[1] = shape[1]
+            self.axis = 0
+
+        self.padding = np.zeros(pad_size, dtype='uint8')
+
+    def padding_image(self, img: np.ndarray):
+        """画像をスクリーンに合わせてpaddingする."""
+        return np.concatenate([self.padding, img, self.padding], self.axis)
+
+
 if __name__ == '__main__':
-    from simple_picviewer import SimplePicViewer
+    ss = ScreenSelector()
+    # sreader = ScreenReader(monitor_num=0)
+    # img = sreader.read()
 
-    # ss = ScreenSelector()
-    # print(ss.get_monitor())
-    # print(ss.get_bbox(1))
-    sreader = ScreenReader(monitor_num=1)
+    capture = cv2.VideoCapture(0)
+    ret, img = capture.read()
 
-    SPV = SimplePicViewer(sreader.read_screen, startup=True)
-    SPV.mainloop()
+    pad = ImgPadding(img, 0)
+    print(pad.screen_ratio)
+    print(pad.img_ratio)
+    print('img_shape', img.shape)
+    print('img_type', img.dtype)
+    print('scr_shape', ss.get_monitor(0))
+
+    while True:
+        # img = sreader.read()
+        ret, img = capture.read()
+        img = pad.padding_image(img)
+        # cv2.imwrite('padding.jpg', img)
+
+        frame_name = 'screen'
+        cv2.namedWindow(frame_name, cv2.WINDOW_NORMAL)
+        # cv2.setWindowProperty(frame_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.imshow(frame_name, img)
+
+        if cv2.waitKey(1) & 0xff == ord('q'):
+            break
+
+    capture.release()
+    cv2.destroyAllWindows()
