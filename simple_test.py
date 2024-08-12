@@ -1,6 +1,4 @@
-"""デモ.
-
-"""
+"""各ブランチの追加機能をテストするモジュール."""
 
 
 import cv2
@@ -9,6 +7,7 @@ import time
 from processors.visitor_predictor import VCPredictor
 from processors.data_IO import DataWriter
 from cv_toolkit.screen_reader import ScreenReader
+from cv_toolkit.screen_reader import ImgPadding
 
 t0 = time.time()
 try:
@@ -24,29 +23,37 @@ try:
                               draw=True, disable_faces=False, with_persons=True,
                               verbose=False)
 
-        # カメラ類の初期化
-        capture = cv2.VideoCapture(0)
-        # sreader = ScreenReader(monitor_num=1)
+    # MiVOLOの初期化
+    vc_pred = VCPredictor(yolo_weight, mivolo_weight, reid_weight,
+                          draw=True, disable_faces=False, with_persons=True,
+                          verbose=False)
+    # vc_pred = None
 
-        # 書き出し機能の初期化
-        dw = DataWriter()
+    # カメラ類の初期化
+    capture = cv2.VideoCapture(0)
+    # sreader = ScreenReader(monitor_num=1)
+    ret, frame = capture.read()
 
-        while True:
-            ret, frame = capture.read()
-            # ret, frame = True, sreader.read_screen()  # スクリーン検出
-            if ret:
-                # 位置検出
-                results, out_im = vc_pred.recognize(frame, clip_person=False)
+    padding = ImgPadding(frame, 0)
 
-                # 結果記録
-                # print(results.md_results[0].dump_data())
-                # for md_obj in results.md_results:
-                for md_obj in vc_pred.new_visitors:
-                    dw.weite_file(md_obj.dump_data().values())
-                cv2.imwrite('temp.jpg', out_im)
-                cv2.imshow(__file__, out_im)
-                if cv2.waitKey(1) & 0xff == ord('q'):
-                    break
+    while True:
+        ret, frame = capture.read()
+        # ret, frame = True, sreader.read_screen()  # スクリーン検出
+        if ret:
+            # 位置検出
+            results, out_im = vc_pred.recognize(frame, clip_person=False)
+            out_im = padding.padding_image(out_im)
+
+            # results.print()
+            # cv2.imwrite('temp.jpg', out_im)
+
+            frame_name = 'simple_test'
+            cv2.namedWindow(frame_name, cv2.WINDOW_NORMAL)
+            cv2.setWindowProperty(frame_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+            cv2.imshow(frame_name, out_im)
+
+            if cv2.waitKey(1) & 0xff == ord('q'):
+                break
 
                 count += 1
 
