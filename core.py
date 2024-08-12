@@ -8,6 +8,7 @@ import cv2
 
 from processors.visitor_predictor import VCPredictor
 from processors.recorder import Recorder
+from processors.data_IO import DataWriter
 from processors.screen_reader import ImgPadding
 
 
@@ -28,6 +29,7 @@ if __name__ == '__main__':
     ret, frame = capture.read()
     padding = ImgPadding(frame, 0)
     recorder = Recorder(frame.shape[1], frame.shape[0], fps=10)
+    data_writer = DataWriter()
 
     # 全画面表示設定
     frame_name = 'visitor_counter'
@@ -41,6 +43,11 @@ if __name__ == '__main__':
             results, out_im = vc_pred.recognize(frame, clip_person=False)
             recorder.write(out_im)  # 動画書込み
 
+            # 記録
+            for md_obj in vc_pred.new_visitors:
+                data_writer.weite_file(md_obj.dump_data().values())
+
+            # 表示
             out_im = padding.padding_image(out_im)
             cv2.imshow(frame_name, out_im)
 
