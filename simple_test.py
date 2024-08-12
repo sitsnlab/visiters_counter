@@ -5,16 +5,23 @@ import cv2
 import time
 
 from processors.visitor_predictor import VCPredictor
+from processors.data_IO import DataWriter
 from cv_toolkit.screen_reader import ScreenReader
 from cv_toolkit.screen_reader import ImgPadding
 
+t0 = time.time()
+try:
+    if __name__ == '__main__':
+        yolo_weight = r".\models\yolov8x_person_face.pt"
+        mivolo_weight = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
+        reid_weight = r".\models\reid_model_addblock3.pth.tar-22"
+        t1 = time.time()
+        count = 0
 
-if __name__ == '__main__':
-    yolo_weight = r".\models\yolov8x_person_face.pt"
-    mivolo_weight = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
-    reid_weight = r".\models\reid_model_addblock3.pth.tar-22"
-    t1 = time.time()
-    count = 0
+        # MiVOLOの初期化
+        vc_pred = VCPredictor(yolo_weight, mivolo_weight, reid_weight,
+                              draw=True, disable_faces=False, with_persons=True,
+                              verbose=False)
 
     # MiVOLOの初期化
     vc_pred = VCPredictor(yolo_weight, mivolo_weight, reid_weight,
@@ -48,13 +55,19 @@ if __name__ == '__main__':
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
 
-            count += 1
+                count += 1
 
-        if (times := time.time() - t1) >= 1:
-            print(count / times)
-            t1 = time.time()
-            count = 0
-        # break
+            if (times := time.time() - t1) >= 1:
+                print(count / times)
+                t1 = time.time()
+                count = 0
+            # break
 
+        # capture.release()
+        # cv2.destroyAllWindows()
+except Exception as e:
+    print(e)
+finally:
+    print(time.time() - t0)
     capture.release()
     cv2.destroyAllWindows()

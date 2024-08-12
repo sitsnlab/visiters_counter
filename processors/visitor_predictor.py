@@ -77,6 +77,7 @@ class VCPredictor:
         self.visitor_dict: dict[str:int] = {key: i+1 for i, key in
                                             enumerate(pre_ids)}
         self.visitor_count = len(self.visitor_dict)
+        self.new_visitors = []
 
         # FPS計算用
         self.oldtime = time.time()
@@ -161,10 +162,13 @@ class VCPredictor:
 
     def update_visitor(self):
         """現在の来場者数を更新する."""
-        for visitorid in self.detected_objects.visitorid_list():
+        self.new_visitors = []
+        for md_obj in self.detected_objects.md_results:
+            visitorid = md_obj.person_id
             if self.visitor_dict.get(visitorid) is None:
                 self.visitor_count += 1
                 self.visitor_dict[visitorid] = self.visitor_count
+                self.new_visitors.append(md_obj)
                 print('update ! ')
 
         for miv_obj in self.detected_objects.md_results:
