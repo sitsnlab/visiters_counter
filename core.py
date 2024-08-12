@@ -8,7 +8,7 @@ import cv2
 
 from processors.visitor_predictor import VCPredictor
 from processors.recorder import Recorder
-from cv_toolkit.screen_reader import ImgPadding
+from processors.screen_reader import ImgPadding
 
 
 if __name__ == '__main__':
