@@ -16,23 +16,23 @@ if __name__ == '__main__':
     mivolo_weight = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
     reid_weight = r".\models\reid_model_addblock3.pth.tar-22"
 
-    # MiVOLOの初期化
+    # 検出器(YOLO, MiVOLO, Re-ID)
     vc_pred = VCPredictor(yolo_weight, mivolo_weight, reid_weight,
                           draw=True, disable_faces=False, with_persons=True,
                           verbose=False, reid_thrs=30)
 
-    # カメラ類の初期化
+    # Webカメラ
     capture = cv2.VideoCapture(0)
-    frame_name = 'visitor_counter'
-    cv2.namedWindow(frame_name, cv2.WINDOW_NORMAL)  # 全画面表示設定
-    cv2.setWindowProperty(frame_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
-    # 画像拡張設定
+    # 画像拡張, 録画機能の初期化
     ret, frame = capture.read()
     padding = ImgPadding(frame, 0)
+    recorder = Recorder(frame.shape[1], frame.shape[0], fps=10)
 
-    # 録画機能初期化
-    recorder = Recorder(width=frame.shape[1], height=frame.shape[0], fps=10)
+    # 全画面表示設定
+    frame_name = 'visitor_counter'
+    cv2.namedWindow(frame_name, cv2.WINDOW_NORMAL)
+    cv2.setWindowProperty(frame_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     while True:
         ret, frame = capture.read()
