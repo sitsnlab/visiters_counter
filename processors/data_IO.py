@@ -21,14 +21,16 @@ class DataWriter:
 
         if save_path is None:
             now = dt.datetime.now()
-            save_path += now.strftime('%H_%M_%S_%f') + '.csv'
-            self.save_file = plib('output')
+            save_path = now.strftime('%H_%M_%S_%f') + '.csv'
+            self.save_file = plib('data') / save_path
+
             with open(self.save_file, 'w') as f:
                 f.write(','.join(HEADER) + '\n')
         else:
             self.save_file = plib(save_path)
 
     def weite_file(self, text):
+        """データを書き込む."""
         with open(self.save_file, 'a') as f:
             f.write(','.join(text) + '\n')
 

@@ -16,7 +16,6 @@ try:
         yolo_weight = r".\models\yolov8x_person_face.pt"
         mivolo_weight = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
         reid_weight = r".\models\reid_model_addblock3.pth.tar-22"
-        save_path = r'.\data\output'
         t1 = time.time()
         count = 0
 
@@ -30,7 +29,7 @@ try:
         # sreader = ScreenReader(monitor_num=1)
 
         # 書き出し機能の初期化
-        dw = DataWriter(save_path)
+        dw = DataWriter()
 
         while True:
             ret, frame = capture.read()
