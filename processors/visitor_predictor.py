@@ -59,12 +59,80 @@ class VCPredictor:
         self.MiVOLO_model = MiVOLO(mivolo_weight, device, verbose=verbose,
                                    half=True, use_persons=with_persons,
                                    disable_faces=disable_faces)
+        
+        # 身体部位画像でのRe-IDに使う辞書
+        self.pivod_dict = {
+            'face': {
+                'weight': 2.0,
+                'path': r'..\..\models\reid_part_models\model_face_3.pth.tar-4',
+                'model_name': 'osnet',
+                'size': (256, 128)
+                },
+            'back_head': {
+                'weight': 0.25,
+                'path': r'..\..\models\reid_part_models\model_backhead_1.pth.tar-8',
+                'model_name': 'osnet',
+                'size': (256, 128)
+                },
+            'chest': {
+                'weight': 0.75,
+                'path': r'..\..\models\reid_part_models\model_chest_addblock_dellarge_2.pth.tar-24',
+                'model_name': 'osnet_addblock_dellarge',
+                'size': (256, 128)
+                },
+            'back': {
+                'weight': 0.75,
+                'path': r'..\..\models\reid_part_models\model_back_5.pth.tar-22',
+                'model_name': 'osnet',
+                'size': (256, 128)
+                },
+            'right_arm': {
+                'weight': 1.0,
+                'path': r'..\..\models\reid_part_models\model_right_arm_2.pth.tar-2',
+                'model_name': 'osnet',
+                'size': (256, 128)
+                },
+            'right_wrist': {
+                'weight': 1.5,
+                'path': r'..\..\models\reid_part_models\model_right_wrist_delsmall_5.pth.tar-24',
+                'model_name': 'osnet_delsmall',
+                'size': (256, 128)
+                },
+            'left_arm': {
+                'weight': 1.0,
+                'path': r'..\..\models\reid_part_models\model_left_arm_4.pth.tar-25',
+                'model_name': 'osnet',
+                'size': (256, 128)
+                },
+            'left_wrist': {
+                'weight': 1.5,
+                'path': r'..\..\models\reid_part_models\model_left_wrist_3.pth.tar-5',
+                'model_name': 'osnet',
+                'size': (256, 128)
+                },
+            'leg': {
+                'weight': 1.0,
+                'path': r'..\..\models\reid_part_models\model_leg_4.pth.tar-6',
+                'model_name': 'osnet',
+                'size': (256, 128)
+                },
+            'right_foot': {
+                'weight': 2.0,
+                'path': r'..\..\models\reid_part_models\model_right_foot_resize_5.pth.tar-19',
+                'model_name': 'osnet',
+                'size': (64, 128)
+                },
+            'left_foot': {
+                'weight': 2.0,
+                'path': r'..\..\models\reid_part_models\model_left_foot_resize_2.pth.tar-23',
+                'model_name': 'osnet',
+                'size': (64, 128)
+                }
 
+            }
         #Re-IDクラスのインスタンス
-        self.reid = ReID()
-        self.reid.image_size = (512, 256)
-        self.reid.thrs = 10
-        self.reid.save_dir = 'visitor_images'
+        self.reid = ReID(image_size=(256,128), save_dir='visitor_images', thrs=10, use_partreid=True, p_thrs=21, pivod_dict=self.pivod_dict)
+
         #Re-IDモデル
         reid_model = osnet(num_classes=1, pretrained=False).cuda()
         reid_model.eval()
@@ -129,7 +197,7 @@ class VCPredictor:
             person = image[round(people[1]): round(people[3]), round(people[0]): round(people[2])]
 
             # ID付与
-            pid = self.reid.run_reid(person)
+            pid = self.reid.run_reid(person, image)
             miv_obj.person_id = pid
 
             if clip_person:

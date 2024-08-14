@@ -19,6 +19,71 @@ from PIL import Image
 
 
 
+from mymodels.myosnet_highres1 import osnet_x1_0 as osnet_highres1
+from mymodels.myosnet_highres2 import osnet_x1_0 as osnet_highres2
+from mymodels.osnet_base import osnet_x1_0 as osnet
+from mymodels.osnet_part_addblock import osnet_x1_0 as osnet_addblock
+from mymodels.osnet_part_addblock_dellarge import osnet_x1_0 as osnet_addblock_dellarge
+from mymodels.osnet_part_delsmall import osnet_x1_0 as osnet_delsmall
+
+
+
+
+'''
+CNNを呼び出す関数
+'''
+def build_model(name, num_classes, loss='softmax', pretrained=True, use_gpu=True):
+    '''
+    Parameters
+    ----------
+    name : str
+        CNNの名前
+    num_classes : int
+        分類クラス数
+    loss : str, optional
+        損失関数. The default is 'softmax'.
+    pretrained : bool, optional
+        事前学習済みモデルを使うか. The default is True.
+    use_gpu : bool, optional
+        GPUを使うか. The default is True.
+
+    Raises
+    ------
+    KeyError
+        DESCRIPTION.
+
+    Returns
+    -------
+    model : nn.Module
+        CNN
+
+    '''
+    
+    model_container = {
+        'osnet': osnet,
+        'osnet_highres1': osnet_highres1,
+        'osnet_highres2': osnet_highres2,
+        'osnet_addblock': osnet_addblock,
+        'osnet_addblock_dellarge': osnet_addblock_dellarge,
+        'osnet_delsmall': osnet_delsmall
+        }
+    
+    model_set = list(model_container.keys())
+    if name not in model_set:
+        raise KeyError(
+            'Unknown model: {}. Model must be one of {}'.format(name, model_set)
+            )
+    
+    model = model_container[name](
+        num_classes = num_classes,
+        loss = loss,
+        pretained = pretrained,
+        use_gpu = use_gpu
+        )
+    
+    return model
+
+
 '''
 画像から特徴ベクトルを得るクラス
 '''
@@ -235,4 +300,102 @@ def calc_euclidean_dist(input1, input2):
 
 
 
+'''
+画像から特徴ベクトルを抽出する関数
+'''
+def feature_extractor(model, image, image_size):
+    '''
+    Parameters
+    ----------
+    model : nn.Module
+        CNN
+    image : ndarray
+        画像
+    image_size : tuple
+        CNNに入力する画像サイズ(H, W)
 
+    Returns
+    -------
+    features: Torch.tensor
+        特徴ベクトル
+
+    '''
+
+
+    '''
+    パラメータ類
+    '''
+    pixel_mean = [0.485, 0.456, 0.406]
+    pixel_std = [0.229, 0.224, 0.225]
+    pixel_norm = True
+    device = 'cuda'
+    
+    
+    #transform関数の作成    
+    transforms = []
+    transforms += [T.Resize(image_size)]
+    transforms += [T.ToTensor()]  
+    
+    if pixel_norm:
+        transforms += [T.Normalize(mean=pixel_mean, std=pixel_std)]
+    
+    preprocess = T.Compose(transforms)
+    
+    to_pil = T.ToPILImage()
+    
+    device = torch.device(device)
+    model.to(device)
+    
+    '''
+    前準備
+    '''
+    if isinstance(image, list):
+        images = []
+        
+        for element in image:
+            if isinstance(element, str):
+                image = Image.open(element).convert('RGB')
+                
+            elif isinstance(element, np.ndarray):
+                image = to_pil(element)
+                
+            else:
+                raise TypeError(
+                    "Type of each element must be belong to [str | numpy.ndarray]"
+                )
+                
+            image = preprocess(image)
+            images.append(image)
+            
+        images = torch.stack(images, dim=0)
+        images = images.to(device)
+        
+    elif isinstance(image, str):
+        image = Image.open(image).convert('RGB')
+        image = preprocess(image)
+        images = image.unsqueeze(0).to(device)
+        
+    elif isinstance(image, np.ndarray):
+        image = to_pil(image)
+        image = preprocess(image)
+        images = image.unsqueeze(0).to(device)
+        
+    elif isinstance(image, torch.Tensor):
+        input_image = Image.open(image)
+        if input_image.dim() == 3:
+            image = image.unsqueeze(0)
+        images = image.to(device)
+        
+    else:
+        raise NotImplementedError
+    
+    '''
+    特徴抽出
+    '''
+    with torch.no_grad():
+        features = model(images)
+        
+    return features
+    
+    
+    

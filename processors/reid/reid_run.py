@@ -32,8 +32,80 @@ print(models_path)
 # %%
 checkpoint = models_path / "model_imdb_cross_person_4.22_99.46.pth.tar"
 weitght = models_path / "yolov8x_person_face.pt"
-reid_model_path = models_path / 'reid_model_addblock3.pth.tar-22'
+reid_model_path = models_path / 'reid_model_market1501_rea_2.pth.tar-55'
 image_save_dir = plib(__file__).parents[2] / 'visitor_images'
+
+print("model path > ", models_path / r'reid_part_models\model_face_3.pth.tar-4')
+
+pivod_dict = {
+    'face': {
+        'weight': 2.0,
+        'path': models_path / r'reid_part_models\model_face_3.pth.tar-4',
+        'model_name': 'osnet',
+        'size': (256, 128)
+        },
+    'back_head': {
+        'weight': 0.25,
+        'path': models_path / r'reid_part_models\model_backhead_1.pth.tar-8',
+        'model_name': 'osnet',
+        'size': (256, 128)
+        },
+    'chest': {
+        'weight': 0.75,
+        'path': models_path / r'reid_part_models\model_chest_addblock_dellarge_2.pth.tar-24',
+        'model_name': 'osnet_addblock_dellarge',
+        'size': (256, 128)
+        },
+    'back': {
+        'weight': 0.75,
+        'path': models_path / r'reid_part_models\model_back_5.pth.tar-22',
+        'model_name': 'osnet',
+        'size': (256, 128)
+        },
+    'right_arm': {
+        'weight': 1.0,
+        'path': models_path / r'reid_part_models\model_right_arm_2.pth.tar-2',
+        'model_name': 'osnet',
+        'size': (256, 128)
+        },
+    'right_wrist': {
+        'weight': 1.5,
+        'path': models_path / r'reid_part_models\model_right_wrist_delsmall_5.pth.tar-24',
+        'model_name': 'osnet_delsmall',
+        'size': (256, 128)
+        },
+    'left_arm': {
+        'weight': 1.0,
+        'path': models_path / r'reid_part_models\model_left_arm_4.pth.tar-25',
+        'model_name': 'osnet',
+        'size': (256, 128)
+        },
+    'left_wrist': {
+        'weight': 1.5,
+        'path': models_path / r'reid_part_models\model_left_wrist_3.pth.tar-5',
+        'model_name': 'osnet',
+        'size': (256, 128)
+        },
+    'leg': {
+        'weight': 1.0,
+        'path': models_path / r'reid_part_models\model_leg_4.pth.tar-6',
+        'model_name': 'osnet',
+        'size': (256, 128)
+        },
+    'right_foot': {
+        'weight': 2.0,
+        'path': models_path / r'reid_part_models\model_right_foot_resize_5.pth.tar-19',
+        'model_name': 'osnet',
+        'size': (64, 128)
+        },
+    'left_foot': {
+        'weight': 2.0,
+        'path': models_path / r'reid_part_models\model_left_foot_resize_2.pth.tar-23',
+        'model_name': 'osnet',
+        'size': (64, 128)
+        }
+
+    }
 
 # checkpoint = r"..\..\models\model_imdb_cross_person_4.22_99.46.pth.tar"
 # weitght = r"..\..\models\yolov8x_person_face.pt"
@@ -55,8 +127,9 @@ capture = cv2.VideoCapture(0)
 sreader = ScreenReader(monitor_num=monitor_num)
 
 #Re-IDクラスのインスタンス
-reid = ReID()
-reid.image_size = (512, 256)
+image_size = (256, 128)
+reid = ReID(image_size=image_size, save_dir=image_save_dir, thrs=10, use_partreid=True, p_thrs=21, pivod_dict=pivod_dict)
+reid.pivod_dict = pivod_dict
 reid.thrs = 10
 reid.save_dir = image_save_dir
 #print("save dir > ", path.abspath(r'.\visitor_images'))
@@ -93,7 +166,7 @@ while True:
         person = image[round(people[1]): round(people[3]), round(people[0]): round(people[2])]
 
 
-        pid = reid.run_reid(person)
+        pid = reid.run_reid(person, image)
         cv2.putText(person, pid, (10, 20), cv2.FONT_HERSHEY_DUPLEX, 1.0, (255, 0, 0))
         cv2.imshow(f"{i}_person", person)
 
