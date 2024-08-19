@@ -13,8 +13,8 @@ Created on Wed Jul 31 19:06:47 2024
 入力は画像
 '''
 import torch
-import reid_tools as rt
-#from reid_tools import load_model, MyFeatureExtractor, calc_euclidean_dist, feature_extractor
+# import reid_tools as rt
+from .reid_tools import load_model, MyFeatureExtractor, calc_euclidean_dist, feature_extractor, build_model
 
 import os
 import os.path as osp
@@ -85,18 +85,19 @@ class ReID(object):
         os.makedirs(self.save_dir, exist_ok=True)
 
         #特徴抽出器
-        self.extractor = rt.MyFeatureExtractor(model, self.image_size)
+        self.extractor = MyFeatureExtractor(model, self.image_size)
 
         '''
         モデル読み込み
         '''
-        for part in self.pivod_dict.keys():
-            model = rt.build_model(self.pivod_dict[part]['model_name'], num_classes=1)
-            model = model.cuda()
-            model.eval()
-            rt.load_model(model, self.pivod_dict[part]['path'])
+        if self.use_partreid:
+            for part in self.pivod_dict.keys():
+                model = build_model(self.pivod_dict[part]['model_name'], num_classes=1)
+                model = model.cuda()
+                model.eval()
+                load_model(model, self.pivod_dict[part]['path'])
 
-            self.pivod_dict[part]['model'] = model
+                self.pivod_dict[part]['model'] = model
 
         '''
         検索画像取得
@@ -117,7 +118,7 @@ class ReID(object):
                 for part in self.pivod_dict.keys():
                     try:
                         part_img = cv2.imread(osp.join(self.save_dir, 'part', part, '{}_{}.jpg'.format(gname, part)))
-                        gpf = rt.feature_extractor(self.pivod_dict[part]['model'], part_img, self.pivod_dict[part]['size'])
+                        gpf = feature_extractor(self.pivod_dict[part]['model'], part_img, self.pivod_dict[part]['size'])
 
                         self.part_features[gname][part] = gpf
 
@@ -222,9 +223,9 @@ class ReID(object):
             if part_images[part] != None and self.part_features[gid][part] != None:
                 cv2.imshow(part, part_images[part])
                 cv2.waitKey(1)
-                qpf = rt.feature_extractor(self.pivod_dict[part]['model'], part_images[part], self.pivod_dict[part]['size'])
+                qpf = feature_extractor(self.pivod_dict[part]['model'], part_images[part], self.pivod_dict[part]['size'])
                 #検索画像の特徴ベクトルとの距離計算
-                dist = rt.calc_euclidean_dist(qpf, self.part_features[gid][part])
+                dist = calc_euclidean_dist(qpf, self.part_features[gid][part])
 
                 #辞書の値を更新
                 pd_dict[part] = dist.item() * self.pivod_dict[part]['weight']
@@ -288,7 +289,7 @@ class ReID(object):
         gfs = torch.cat(gfs, dim=0)
 
         #検索画像の特徴ベクトルとの距離計算
-        distmat = rt.calc_euclidean_dist(qf, gfs)
+        distmat = calc_euclidean_dist(qf, gfs)
         distmat = distmat.cpu().numpy()
         #余分な[]を外す
         dist_iter = list(itertools.chain.from_iterable(distmat))

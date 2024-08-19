@@ -134,7 +134,7 @@ class VCPredictor:
             }
         #Re-IDクラスのインスタンス
         self.reid = ReID(image_size=(256, 128), save_dir='visitor_images',
-                         thrs=reid_thrs, use_partreid=True, p_thrs=21, pivod_dict=self.pivod_dict)
+                         thrs=reid_thrs, use_partreid=False, p_thrs=21, pivod_dict=self.pivod_dict)
 
         #Re-IDモデル
         reid_model = osnet(num_classes=1, pretrained=False).cuda()
