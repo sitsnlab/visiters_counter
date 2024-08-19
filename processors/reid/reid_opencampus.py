@@ -302,7 +302,7 @@ class ReID(object):
 
         #距離の最小値が閾値以上の場合は新規人物として登録
         print("min distance > ", dist_iter[indice])
-        if dist_iter[indice] > self.p_thrs:
+        if dist_iter[indice] > self.thrs:
             pid = self.regist_new_person(qimg)
 
         else:
