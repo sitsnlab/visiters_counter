@@ -16,8 +16,8 @@ from mivolo.model.mi_volo import MiVOLO
 from .mivolo_object import FrameDetectResult
 
 from .reid.reid_tools import load_model
-#from .reid.myosnet_highres1 import osnet_x1_0 as osnet
-from .reid.osnet import osnet_x1_0 as osnet
+from .reid.myosnet_highres1 import osnet_x1_0 as osnet
+#from .reid.osnet import osnet_x1_0 as osnet
 from .reid.reid_opencampus import ReID
 
 
@@ -134,7 +134,7 @@ class VCPredictor:
 
             }
         #Re-IDクラスのインスタンス
-        self.reid = ReID(image_size=(256, 128), save_dir='visitor_images',
+        self.reid = ReID(image_size=(512, 256), save_dir='visitor_images',
                          thrs=reid_thrs, use_partreid=False, p_thrs=21, pivod_dict=self.pivod_dict)
 
         #Re-IDモデル

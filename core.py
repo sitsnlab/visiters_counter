@@ -16,12 +16,13 @@ from processors.screen_reader import ImgPadding
 if __name__ == '__main__':
     yolo_weight = r".\models\yolov8x_person_face.pt"
     mivolo_weight = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
-    reid_weight = r".\models\reid_model_market1501_rea_2.pth.tar-55"
+    #reid_weight = r".\models\reid_model_market1501_rea_2.pth.tar-55"
+    reid_weight = r".\models\reid_model_addblock3.pth.tar-22"
 
     # 検出器(YOLO, MiVOLO, Re-ID)
     vc_pred = VCPredictor(yolo_weight, mivolo_weight, reid_weight,
                           draw=True, disable_faces=False, with_persons=True,
-                          verbose=False, reid_thrs=30)
+                          verbose=False, reid_thrs=25)
 
     # Webカメラ
     capture = cv2.VideoCapture(0)
