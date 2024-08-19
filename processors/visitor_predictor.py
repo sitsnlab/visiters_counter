@@ -16,7 +16,8 @@ from mivolo.model.mi_volo import MiVOLO
 from .mivolo_object import FrameDetectResult
 
 from .reid.reid_tools import load_model
-from .reid.myosnet_highres1 import osnet_x1_0 as osnet
+#from .reid.myosnet_highres1 import osnet_x1_0 as osnet
+from .reid.osnet import osnet_x1_0 as osnet
 from .reid.reid_opencampus import ReID
 
 
