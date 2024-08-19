@@ -15,7 +15,7 @@ from mivolo.structures import PersonAndFaceResult
 
 
 class FrameDetectResult(PersonAndFaceResult):
-    """各フレーム毎の検出結果を持つクラス."""
+    """1フレーム内の検出結果を持つクラス."""
 
     def __init__(self, results: Results, last_id=0, line_width=None,
                  font_size=None, font="Arial.ttf", pil=False, img=None):
@@ -57,6 +57,9 @@ class FrameDetectResult(PersonAndFaceResult):
         self.md_results: list[MiVOLODetectResult] = []
         self.person_face_id: list[tuple[int, int]] = []
         self.last_id = last_id
+
+        now = dt.datetime.now()
+        self.time = now.strftime('%Y-%m-%d %H:%M:%S.%f')
 
     def visitorid_list(self):
         """検出した人物のIDリストを返す."""
@@ -105,7 +108,8 @@ class FrameDetectResult(PersonAndFaceResult):
             age = self.fix_age(face_ind, person_ind)
 
             mvdr = MiVOLODetectResult(p_boxes[person_ind], p_boxes[face_ind],
-                                      color, gender=gender, age=age)
+                                      color, gender=gender, age=age,
+                                      time=self.time)
             self.md_results.append(mvdr)
 
     def fix_gender(self, face_ind=None, person_ind=None):
@@ -232,7 +236,7 @@ class MiVOLODetectResult():
     """各人物ことのインスタンス."""
 
     def __init__(self, person: Boxes, face: Boxes, color: int,
-                 age: float, gender: str, person_id=None,):
+                 age: float, gender: str, time: str, person_id=None,):
         """イニシャライザ.
 
         Parameters
@@ -247,6 +251,8 @@ class MiVOLODetectResult():
             年齢.
         gender : str
             性別.
+        time : str
+            検出時間.
         person_id : TYPE, optional
             個人ID. The default is None.
 
@@ -263,9 +269,7 @@ class MiVOLODetectResult():
         self.person_id = person_id
         self.visited_numb = 0
 
-        now = dt.datetime.now()
-        self.time = now.strftime('%H:%M:%S.%f')
-        self.date = now.strftime('%Y/%m/%d')
+        self.time = time
 
     def box_setter(self, bbox: Boxes) -> Boxes | None:
         """バウンディングボックスのセッター.
@@ -324,7 +328,10 @@ class MiVOLODetectResult():
         """検出した情報を出力する."""
         data = {}
 
+        data['visited_numb'] = str(self.visited_numb)
         data['person_id'] = self.person_id
         data['time'] = self.time
-        data['gender'] = self.gender
-        data['age'] = self.age
+        data['gender'] = str(self.gender)
+        data['age'] = str(self.age)
+
+        return data

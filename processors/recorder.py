@@ -34,9 +34,10 @@ class Recorder:
         self.width = width
         self.height = height
         self.fps = fps
+        self.prepare()
 
-    
-    def prepare(self, save_dir):
+
+    def prepare(self, save_dir = 'video'):
         '''
         Parameters
         ----------
@@ -48,15 +49,15 @@ class Recorder:
         None.
 
         '''
-        
+
         date = datetime.datetime.now().strftime('%m%d_%H%M')
         os.makedirs(save_dir, exist_ok=True)
-        
+
         fmt = cv2.VideoWriter_fourcc(*'mp4v')
-        
+
         self.writer = cv2.VideoWriter(osp.join(save_dir, date + '.mp4'), fmt, self.fps, (self.width, self.height))
-        
-    
+
+
     def write(self, frame):
         '''
         Parameters
@@ -69,14 +70,14 @@ class Recorder:
         None.
 
         '''
-        
+
         self.writer.write(frame)
-        
-        
+
+
     def release(self):
         self.writer.release()
-        
-    
+
+
 
 
 

@@ -25,7 +25,7 @@ class VCPredictor:
     """人物の検出と同定を行うクラス."""
 
     def __init__(self, yolo_weight: str, mivolo_weight: str, reid_weight: str,
-                 device: str = "cuda:0",
+                 device: str = "cuda:0", reid_thrs: float = 30,
                  with_persons: bool = False, disable_faces: bool = False,
                  draw: bool = False, verbose: bool = False):
         """イニシャライザ.
@@ -40,6 +40,8 @@ class VCPredictor:
             Re-IDチェックポイントパス.
         device : str
             使用デバイス.
+        reid_thrs: float
+            re-idの閾値.
         with_persons : bool, optional
             検出に体画像を使用するか. The default is False.
         disable_faces : bool, optional
@@ -59,7 +61,7 @@ class VCPredictor:
         self.MiVOLO_model = MiVOLO(mivolo_weight, device, verbose=verbose,
                                    half=True, use_persons=with_persons,
                                    disable_faces=disable_faces)
-        
+
         # 身体部位画像でのRe-IDに使う辞書
         self.pivod_dict = {
             'face': {
@@ -131,26 +133,30 @@ class VCPredictor:
 
             }
         #Re-IDクラスのインスタンス
-        self.reid = ReID(image_size=(256,128), save_dir='visitor_images', thrs=10, use_partreid=True, p_thrs=21, pivod_dict=self.pivod_dict)
+        self.reid = ReID(image_size=(256, 128), save_dir='visitor_images',
+                         thrs=reid_thrs, use_partreid=True, p_thrs=21, pivod_dict=self.pivod_dict)
 
         #Re-IDモデル
         reid_model = osnet(num_classes=1, pretrained=False).cuda()
         reid_model.eval()
         load_model(reid_model, reid_weight)
         self.reid.prepare(reid_model)
+        pre_ids = self.reid.dict_gallery_features.keys()
+
+        # visitor計測用
+        self.visitor_dict: dict[str:int] = {key: i+1 for i, key in
+                                            enumerate(pre_ids)}
+        self.visitor_count = len(self.visitor_dict)
+        self.new_visitors = []
 
         # FPS計算用
         self.oldtime = time.time()
         self.count = 0
         self.fps = 0.0
 
-        # visitor計測用
-        self.visitor_count = 0
-        self.visitor_dict: dict[str:int] = {}  # 来場者の個人IDリスト
-
         self.detected_objects: FrameDetectResult = None
         self.old_objects: FrameDetectResult = None
-        
+
 
     def recognize(self, image: np.ndarray,
                   plot_id: bool = True, plot_info: bool = True,
@@ -227,10 +233,13 @@ class VCPredictor:
 
     def update_visitor(self):
         """現在の来場者数を更新する."""
-        for visitorid in self.detected_objects.visitorid_list():
+        self.new_visitors = []
+        for md_obj in self.detected_objects.md_results:
+            visitorid = md_obj.person_id
             if self.visitor_dict.get(visitorid) is None:
                 self.visitor_count += 1
                 self.visitor_dict[visitorid] = self.visitor_count
+                self.new_visitors.append(md_obj)
                 print('update ! ')
 
         for miv_obj in self.detected_objects.md_results:

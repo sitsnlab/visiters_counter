@@ -31,7 +31,7 @@ import itertools
 
 try:
     import openpose_processor as opp
-    
+
 except ModuleNotFoundError:
     print("Failed to import openpose")
 
@@ -52,15 +52,15 @@ class ReID(object):
         self.save_dir = save_dir
         #全身画像のRe-IDで新たな人物と判断する閾値
         self.thrs = thrs
-        
+
         #身体部位画像でのRe-IDを実行するか
         self.use_partreid = use_partreid
         #身体部位画像のRe-IDにおける閾値
         self.p_thrs = p_thrs
-        
+
         #身体部位画像を学習したCNNに関する辞書
         self.pivod_dict = pivod_dict
-        
+
         #身体部位画像の特徴を入れていく辞書
         self.part_features = {}
 
@@ -86,7 +86,7 @@ class ReID(object):
 
         #特徴抽出器
         self.extractor = rt.MyFeatureExtractor(model, self.image_size)
-        
+
         '''
         モデル読み込み
         '''
@@ -95,7 +95,7 @@ class ReID(object):
             model = model.cuda()
             model.eval()
             rt.load_model(model, self.pivod_dict[part]['path'])
-            
+
             self.pivod_dict[part]['model'] = model
 
         '''
@@ -111,19 +111,19 @@ class ReID(object):
             #特徴抽出
             gf = self.extractor(gimg)
             self.dict_gallery_features[gname] = gf
-            
+
             #身体部位画像の特徴
             if self.use_partreid:
                 for part in self.pivod_dict.keys():
                     try:
                         part_img = cv2.imread(osp.join(self.save_dir, 'part', part, '{}_{}.jpg'.format(gname, part)))
                         gpf = rt.feature_extractor(self.pivod_dict[part]['model'], part_img, self.pivod_dict[part]['size'])
-                        
+
                         self.part_features[gname][part] = gpf
-                    
+
                     except FileNotFoundError:
                         pass
-                    
+
 
         print("Got {} images".format(len(gimgs)))
 
@@ -140,7 +140,7 @@ class ReID(object):
 
         part_images: dict
             身体部位画像
-            
+
         Returns
         -------
         None.
@@ -171,13 +171,13 @@ class ReID(object):
         #画像の特徴抽出，特徴ベクトル保存
         gf = self.extractor(image)
         self.dict_gallery_features[pid] = gf
-        
+
         #身体部位画像の保存
         if self.use_partreid:
             for part in self.pivod_dict.keys():
                 try:
                     cv2.imwrite(osp.join(self.save_dir, 'part', part, '{}_{}.jpg'.format(pid, part)), part_images[part])
-                    
+
                 except:
                     pass
 
@@ -186,8 +186,8 @@ class ReID(object):
         #print("savede images at {}".format(osp.join(self.save_dir, pid + '.jpg')))
 
         return pid
-    
-    
+
+
     '''
     身体部位画像を使ったRe-ID
     '''
@@ -197,7 +197,7 @@ class ReID(object):
         ----------
         image : ndarray
             カメラ画像
-            
+
         gid: str
             全身画像のRe-IDで同一人物と判断された人物のID
 
@@ -207,17 +207,17 @@ class ReID(object):
             人物ID
 
         '''
-    
+
         #身体部位ごとの画像作成
         part_images = opp.crop_by_part(image)
-        
+
         #部位名をキー，特徴ベクトル間の距離を値とする辞書
         pd_dict = {}
-        
+
         #身体部位ごとのループ
         for part in self.pivod_dict.keys():
             pd_dict[part] = None
-            
+
             #部位画像の特徴抽出
             if part_images[part] != None and self.part_features[gid][part] != None:
                 cv2.imshow(part, part_images[part])
@@ -225,30 +225,30 @@ class ReID(object):
                 qpf = rt.feature_extractor(self.pivod_dict[part]['model'], part_images[part], self.pivod_dict[part]['size'])
                 #検索画像の特徴ベクトルとの距離計算
                 dist = rt.calc_euclidean_dist(qpf, self.part_features[gid][part])
-                
+
                 #辞書の値を更新
                 pd_dict[part] = dist.item() * self.pivod_dict[part]['weight']
-                
+
         #辞書の値からNoneを除去
         values = [v for v in list(pd_dict.values) if v != None]
-        
+
         #加重平均
         factor = np.mean(values)
-        
-        #平均値が閾値を下回った場合は両者を同一人物とする   
+
+        #平均値が閾値を下回った場合は両者を同一人物とする
         if factor < self.p_thrs:
             pid = gid
-        
+
         #閾値を上回った場合は異なる人物とする
         else:
             pid = 'another'
-            
-            
+
+
         return pid
-                
-         
-        
-    
+
+
+
+
 
 
     '''
@@ -294,7 +294,7 @@ class ReID(object):
         dist_iter = list(itertools.chain.from_iterable(distmat))
         print("distmat > , ", dist_iter)
         #距離が短い順にしたときに各要素が元々どの位置にいたかを表すリスト
-            
+
         #indices = np.argsort(dist_iter, axis=1)
         indice = dist_iter.index(min(dist_iter))
         print("indice > ", indice)
@@ -307,7 +307,7 @@ class ReID(object):
         else:
             pid = gid_list[indice]
 
-        
+
         '''
         身体部位画像でのRe-ID
         '''
@@ -315,7 +315,7 @@ class ReID(object):
             print("Run part Re-ID")
             for _ in range(len(self.pid_list)):
                 pid = self.part_reid(frame, pid)
-                
+
                 if pid != 'another':
                     break
 
