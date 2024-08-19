@@ -19,14 +19,14 @@ sys.path.append(path.join(path.dirname(__file__), "../.."))
 from processors.visitor_predictor import VCPredictor
 from processors.screen_reader import ScreenReader
 
-from reid_tools import load_model
-from myosnet_highres1 import osnet_x1_0
-from reid_opencampus import ReID
+from processors.reid.reid_tools import load_model
+from processors.reid.myosnet_highres1 import osnet_x1_0
+from processors.reid.reid_opencampus import ReID
 
 import itertools
 import glob
 
-models_path = plib(__file__).parents[2] / 'models'
+models_path = plib(__file__).parents[1] / 'models'
 print(models_path)
 
 # %%
