@@ -17,7 +17,7 @@ sys.path.append(path.join(path.dirname(__file__), ".."))
 sys.path.append(path.join(path.dirname(__file__), "../.."))
 
 from processors.visitor_predictor import VCPredictor
-from cv_toolkit.screen_reader import ScreenReader
+from processors.screen_reader import ScreenReader
 
 from reid_tools import load_model
 from myosnet_highres1 import osnet_x1_0
