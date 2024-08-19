@@ -12,6 +12,7 @@ from cv_toolkit.screen_reader import ScreenReader
 
 from mivolo.model.yolo_detector import Detector
 
+
 checkpoint = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
 weitght = r".\models\yolov8x_person_face.pt"
 read_screen = False
@@ -30,6 +31,8 @@ detector = Detector(r".\models\yolov8x_person_face.pt", 'cuda')
 capture = cv2.VideoCapture(0)
 sreader = ScreenReader(monitor_num=monitor_num)
 
+
+
 print('Start detection.')
 while True:
     """画像検出."""
@@ -47,7 +50,7 @@ while True:
     cv2.imshow('camera', out_im)
     if cv2.waitKey(1) & 0xff == ord('q'):
         break
-
+    
     t2 = time.time()
     tsum += t2 - t1
     t1 = t2
@@ -57,5 +60,8 @@ while True:
         count, tsum = 0, 0
         print(f"fps: {fps}")
 
+    
+    
 capture.release()
 cv2.destroyAllWindows()
+

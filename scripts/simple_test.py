@@ -36,6 +36,17 @@ try:
 
     padding = ImgPadding(frame, 0)
 
+    # 録画準備
+    # 動画保存先
+    video_dir = r'.\video'
+    # フレームの幅．高さ，動画FPS
+    width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    #fps = capture.get(cv2.CAP_PROP_FPS)
+    fps = 10
+    recorder = recorder.Recorder(width, height, fps)
+    recorder.prepare(video_dir)
+
     while True:
         ret, frame = capture.read()
         # ret, frame = True, sreader.read_screen()  # スクリーン検出
@@ -71,3 +82,4 @@ finally:
     print(time.time() - t0)
     capture.release()
     cv2.destroyAllWindows()
+    recorder.release()
