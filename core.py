@@ -54,7 +54,10 @@ if __name__ == '__main__':
             out_im = padding.padding_image(out_im)
             cv2.imshow(frame_name, out_im)
 
-            print('time', int(time.time() - t0))
+            if len(vc_pred.new_visitors) > 0:
+                print('update ! ')
+            else:
+                print('time', int(time.time() - t0))
             if cv2.waitKey(1) & 0xff == ord('q'):
                 break
 
