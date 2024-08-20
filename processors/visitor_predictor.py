@@ -258,7 +258,11 @@ class VCPredictor:
 
         # FPS，来場者数を描画
         text = f'fps:{self.fps}, visitor:{self.visitor_count}'
-        self.detected_objects.plot_textbox((0, 0), text=text)
+        shape = self.detected_objects.annotator.im.shape
+        print(shape)
+        print(self.detected_objects.annotator.im.shape)
+        self.detected_objects.plot_textbox((0, shape[0]),
+                                           text=text, anchor='bottom-left')
         return self.detected_objects.get_img()
 
 

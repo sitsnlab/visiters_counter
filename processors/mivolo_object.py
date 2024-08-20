@@ -170,7 +170,7 @@ class FrameDetectResult(PersonAndFaceResult):
         for mvdr in self.md_results:
             mvdr.plot_box(self.annotator, plot_id, plot_info)
 
-    def plot_textbox(self, xy, text,
+    def plot_textbox(self, xy, text, anchor='top-left',
                      txt_color=(255, 255, 255), bg_color=(0, 0, 0), space=5):
         """指定した位置にテキストボックスを描画する.
 
@@ -178,11 +178,12 @@ class FrameDetectResult(PersonAndFaceResult):
         Parameters
         ----------
         xy : TYPE
-            描画位置.文字の左上座標
+            描画位置.
         text : TYPE
             描画メッセージ.
         anchor : TYPE, optional
-            描画位置のアンカー. The default is 'top'.
+            描画位置のアンカー.
+            The default is 'top-left'.
         txt_color : TYPE, optional
             文字色. The default is (255, 255, 255).
         bg_color : TYPE, optional
@@ -193,6 +194,7 @@ class FrameDetectResult(PersonAndFaceResult):
         None.
 
         """
+        xy = list(xy)
         # self.annotator.text(xy, text, anchor=anchor, txt_color=txt_color,
         #                     box_style=True)
 
@@ -204,11 +206,27 @@ class FrameDetectResult(PersonAndFaceResult):
         w, h = cv2.getTextSize(text, 0, thickness=tf,
                                fontScale=self.annotator.lw / 3)[0]
 
-        p2 = xy[0] + w, xy[1] + h + 2*space
+        p2 = [xy[0] + w, xy[1] + h + 2*space]
 
+        rect_size = p2[0] - xy[0], p2[1] - xy[1]
+
+        anc_y, anc_x = anchor.split("-")
+        if anc_y == 'bottom':
+            xy[1] -= rect_size[1]
+            p2[1] -= rect_size[1]
+        if anc_y == 'center':
+            xy[1] -= int(rect_size[1]/2)
+            p2[1] -= int(rect_size[1]/2)
+
+        if anc_x == 'right':
+            xy[0] -= rect_size[0]
+            p2[0] -= rect_size[0]
+        if anc_x == 'center':
+            xy[0] -= int(rect_size[0]/2)
+            p2[0] -= int(rect_size[0]/2)
+
+        # 文字,背景の描画
         cv2.rectangle(self.annotator.im, xy, p2, bg_color, -1, cv2.LINE_AA)
-
-        # 文字の描画
         left_bottom = xy[0], xy[1] + h + space
         cv2.putText(self.annotator.im, text, left_bottom, 0,
                     self.annotator.lw / 3, txt_color, thickness=tf,
