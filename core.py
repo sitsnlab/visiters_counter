@@ -16,7 +16,10 @@ from processors.screen_reader import ImgPadding
 if __name__ == '__main__':
     yolo_weight = r".\models\yolov8x_person_face.pt"
     mivolo_weight = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
+    
+    #　Market-1501(中国で作成されたデータセット)の画像を使う場合はこっち
     #reid_weight = r".\models\reid_model_market1501_rea_2.pth.tar-55"
+    #　スーツを着用した人物群(中村研で作成したデータセット)の画像を使う場合はこっち
     reid_weight = r".\models\reid_model_addblock3.pth.tar-22"
 
     # 検出器(YOLO, MiVOLO, Re-ID)

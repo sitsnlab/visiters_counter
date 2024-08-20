@@ -16,7 +16,10 @@ from mivolo.model.mi_volo import MiVOLO
 from .mivolo_object import FrameDetectResult
 
 from .reid.reid_tools import load_model
+
+#　スーツを着用した人物群(中村研で作成したデータセット)の画像を使う場合はこっち
 from .reid.myosnet_highres1 import osnet_x1_0 as osnet
+#　Market-1501(中国で作成されたデータセット)の画像を使う場合はこっち
 #from .reid.osnet import osnet_x1_0 as osnet
 from .reid.reid_opencampus import ReID
 
@@ -133,7 +136,9 @@ class VCPredictor:
                 }
 
             }
-        #Re-IDクラスのインスタンス
+        # Re-IDクラスのインスタンス
+        # Market-1501の画像を学習したCNNを使う場合はimage_size = (256, 128)
+        # スーツ着用の人物群の画像を学習したCNNを使う場合はimage_size = (512, 256)
         self.reid = ReID(image_size=(512, 256), save_dir='visitor_images',
                          thrs=reid_thrs, use_partreid=False, p_thrs=21, pivod_dict=self.pivod_dict)
 
