@@ -9,6 +9,7 @@ from typing import Optional, Tuple
 import numpy as np
 import itertools
 import cv2
+from PIL import ImageFont, ImageDraw, Image
 
 from ultralytics.engine.results import Results
 from mivolo.model.yolo_detector import Detector
@@ -224,6 +225,7 @@ class VCPredictor:
 
         # 検出結果の描画
         out_im = self.draw_result(plot_id, plot_info)
+        out_im = putText_japanese(out_im, '来場者数計測中...', (0, 0), 10)
 
         return self.detected_objects, out_im
 
@@ -271,4 +273,17 @@ def dummy_id(obj):
     num = obj.age // 10 * 10
     did = f"{num}_{obj.gender}"
     return did
+
+def putText_japanese(img, text, point, size=24, font_color='black'):
+    """日本語の文字を追加する."""
+    font = ImageFont.truetype('msgothic.ttc', size)
+
+    img_pil = Image.fromarray(img)
+    draw = ImageDraw.Draw(img_pil)
+
+    #テキスト描画
+    draw.text(point, text, fill=font_color, font=font)
+
+    #PILからndarrayに変換して返す
+    return np.array(img_pil)
 
