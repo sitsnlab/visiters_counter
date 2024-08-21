@@ -28,6 +28,65 @@ from .reid.reid_opencampus import ReID
 class VCPredictor:
     """人物の検出と同定を行うクラス."""
 
+    # 身体部位画像でのRe-IDに使う辞書
+    pivod_dict = {
+        'face': {
+            'weight': 2.0,
+            'path': r'..\..\models\reid_part_models\model_face_3.pth.tar-4',
+            'model_name': 'osnet',
+            'size': (256, 128)},
+        'back_head': {
+            'weight': 0.25,
+            'path': r'..\..\models\reid_part_models\model_backhead_1.pth.tar-8',
+            'model_name': 'osnet',
+            'size': (256, 128)},
+        'chest': {
+            'weight': 0.75,
+            'path': r'..\..\models\reid_part_models\model_chest_addblock_dellarge_2.pth.tar-24',
+            'model_name': 'osnet_addblock_dellarge',
+            'size': (256, 128)},
+        'back': {
+            'weight': 0.75,
+            'path': r'..\..\models\reid_part_models\model_back_5.pth.tar-22',
+            'model_name': 'osnet',
+            'size': (256, 128)},
+        'right_arm': {
+            'weight': 1.0,
+            'path': r'..\..\models\reid_part_models\model_right_arm_2.pth.tar-2',
+            'model_name': 'osnet',
+            'size': (256, 128)},
+        'right_wrist': {
+            'weight': 1.5,
+            'path': r'..\..\models\reid_part_models\model_right_wrist_delsmall_5.pth.tar-24',
+            'model_name': 'osnet_delsmall',
+            'size': (256, 128)},
+        'left_arm': {
+            'weight': 1.0,
+            'path': r'..\..\models\reid_part_models\model_left_arm_4.pth.tar-25',
+            'model_name': 'osnet',
+            'size': (256, 128)},
+        'left_wrist': {
+            'weight': 1.5,
+            'path': r'..\..\models\reid_part_models\model_left_wrist_3.pth.tar-5',
+            'model_name': 'osnet',
+            'size': (256, 128)},
+        'leg': {
+            'weight': 1.0,
+            'path': r'..\..\models\reid_part_models\model_leg_4.pth.tar-6',
+            'model_name': 'osnet',
+            'size': (256, 128)},
+        'right_foot': {
+            'weight': 2.0,
+            'path': r'..\..\models\reid_part_models\model_right_foot_resize_5.pth.tar-19',
+            'model_name': 'osnet',
+            'size': (64, 128)},
+        'left_foot': {
+            'weight': 2.0,
+            'path': r'..\..\models\reid_part_models\model_left_foot_resize_2.pth.tar-23',
+            'model_name': 'osnet',
+            'size': (64, 128)}
+        }
+
     def __init__(self, yolo_weight: str, mivolo_weight: str, reid_weight: str,
                  device: str = "cuda:0", reid_thrs: float = 30,
                  with_persons: bool = False, disable_faces: bool = False,
@@ -66,76 +125,6 @@ class VCPredictor:
                                    half=True, use_persons=with_persons,
                                    disable_faces=disable_faces)
 
-        # 身体部位画像でのRe-IDに使う辞書
-        self.pivod_dict = {
-            'face': {
-                'weight': 2.0,
-                'path': r'..\..\models\reid_part_models\model_face_3.pth.tar-4',
-                'model_name': 'osnet',
-                'size': (256, 128)
-                },
-            'back_head': {
-                'weight': 0.25,
-                'path': r'..\..\models\reid_part_models\model_backhead_1.pth.tar-8',
-                'model_name': 'osnet',
-                'size': (256, 128)
-                },
-            'chest': {
-                'weight': 0.75,
-                'path': r'..\..\models\reid_part_models\model_chest_addblock_dellarge_2.pth.tar-24',
-                'model_name': 'osnet_addblock_dellarge',
-                'size': (256, 128)
-                },
-            'back': {
-                'weight': 0.75,
-                'path': r'..\..\models\reid_part_models\model_back_5.pth.tar-22',
-                'model_name': 'osnet',
-                'size': (256, 128)
-                },
-            'right_arm': {
-                'weight': 1.0,
-                'path': r'..\..\models\reid_part_models\model_right_arm_2.pth.tar-2',
-                'model_name': 'osnet',
-                'size': (256, 128)
-                },
-            'right_wrist': {
-                'weight': 1.5,
-                'path': r'..\..\models\reid_part_models\model_right_wrist_delsmall_5.pth.tar-24',
-                'model_name': 'osnet_delsmall',
-                'size': (256, 128)
-                },
-            'left_arm': {
-                'weight': 1.0,
-                'path': r'..\..\models\reid_part_models\model_left_arm_4.pth.tar-25',
-                'model_name': 'osnet',
-                'size': (256, 128)
-                },
-            'left_wrist': {
-                'weight': 1.5,
-                'path': r'..\..\models\reid_part_models\model_left_wrist_3.pth.tar-5',
-                'model_name': 'osnet',
-                'size': (256, 128)
-                },
-            'leg': {
-                'weight': 1.0,
-                'path': r'..\..\models\reid_part_models\model_leg_4.pth.tar-6',
-                'model_name': 'osnet',
-                'size': (256, 128)
-                },
-            'right_foot': {
-                'weight': 2.0,
-                'path': r'..\..\models\reid_part_models\model_right_foot_resize_5.pth.tar-19',
-                'model_name': 'osnet',
-                'size': (64, 128)
-                },
-            'left_foot': {
-                'weight': 2.0,
-                'path': r'..\..\models\reid_part_models\model_left_foot_resize_2.pth.tar-23',
-                'model_name': 'osnet',
-                'size': (64, 128)
-                }
-
-            }
         # Re-IDクラスのインスタンス
         # Market-1501の画像を学習したCNNを使う場合はimage_size = (256, 128)
         # スーツ着用の人物群の画像を学習したCNNを使う場合はimage_size = (512, 256)

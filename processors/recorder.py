@@ -49,8 +49,7 @@ class Recorder:
         None.
 
         '''
-
-        date = datetime.datetime.now().strftime('%m%d_%H%M')
+        date = datetime.datetime.now().strftime('%Y_%m%d_%H%M')
         os.makedirs(save_dir, exist_ok=True)
 
         fmt = cv2.VideoWriter_fourcc(*'mp4v')

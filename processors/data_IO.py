@@ -21,7 +21,7 @@ class DataWriter:
 
         if save_path is None:
             now = dt.datetime.now()
-            save_path = now.strftime('%H_%M_%S_%f') + '.csv'
+            save_path = now.strftime('%Y_%m%d_%H%M') + '.csv'
             self.save_file = plib('data') / save_path
 
             with open(self.save_file, 'w') as f:

@@ -16,7 +16,7 @@ from processors.screen_reader import ImgPadding
 if __name__ == '__main__':
     yolo_weight = r".\models\yolov8x_person_face.pt"
     mivolo_weight = r".\models\model_imdb_cross_person_4.22_99.46.pth.tar"
-    
+
     #　Market-1501(中国で作成されたデータセット)の画像を使う場合はこっち
     #reid_weight = r".\models\reid_model_market1501_rea_2.pth.tar-55"
     #　スーツを着用した人物群(中村研で作成したデータセット)の画像を使う場合はこっち
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     # 全画面表示設定
     frame_name = 'visitor_counter'
     cv2.namedWindow(frame_name, cv2.WINDOW_NORMAL)
-    cv2.setWindowProperty(frame_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    # cv2.setWindowProperty(frame_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
     t0 = time.time()
     while True:
